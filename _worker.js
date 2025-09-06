@@ -101,12 +101,12 @@ async function sendMail(env, name, email, message) {
   }
 
   const mail = {
-    personalizations: [{ to: [{ email: SEND_TO }] }],
-    from: { email: `noreply@${SEND_DOMAIN}`, name: FROM_NAME },
-    subject: `Сообщение с сайта: ${name || "без имени"}`,
-    content: [{ type: "text/plain", value: `От: ${name}\nEmail: ${email}\n\n${message}` }],
-    headers: REPLY_TO ? { "Reply-To": REPLY_TO } : undefined,
-  };
+  personalizations: [{ to: [{ email: SEND_TO }] }],
+  from: { email: `noreply@${SEND_DOMAIN}`, name: FROM_NAME },
+  reply_to: REPLY_TO ? { email: REPLY_TO } : undefined,   // ← ДОБАВИЛИ ПРАВИЛЬНО
+  subject: `Сообщение с сайта: ${name || "без имени"}`,
+  content: [{ type: "text/plain", value: `От: ${name}\nEmail: ${email}\n\n${message}` }],
+};
 
   const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {
     method: "POST",

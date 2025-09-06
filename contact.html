@@ -14,7 +14,7 @@
     .err { color: #c00; }
   </style>
 
-  <!-- Turnstile explicit -->
+  <!-- Turnstile: явный рендер, чтобы контролировать токен -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 <body>
@@ -25,10 +25,10 @@
     <input name="email" type="email" placeholder="Ваш e-mail" required>
     <textarea name="message" placeholder="Сообщение" required></textarea>
 
-    <!-- скрытое поле под токен -->
+    <!-- скрытое поле под токен Turnstile -->
     <input type="hidden" name="cf-turnstile-response" id="ts-response">
 
-    <!-- сюда явно отрисуем виджет -->
+    <!-- сюда отрисуем виджет -->
     <div id="ts-container"></div>
 
     <button type="submit" id="submitBtn" disabled>Отправить</button>
@@ -41,9 +41,11 @@
     let widgetId = null;
 
     function tsOnSuccess(token) {
-      document.getElementById('ts-response').value = token || '';
-      document.getElementById('ts-status').textContent = 'Turnstile OK: токен получен';
-      document.getElementById('submitBtn').disabled = !token;
+      const t = token || '';
+      document.getElementById('ts-response').value = t;
+      document.getElementById('ts-status').textContent =
+        'Turnstile OK: токен получен (' + t.length + ' символов, ' + t.slice(0,12) + '...)';
+      document.getElementById('submitBtn').disabled = !t;
     }
     function tsOnExpired() {
       document.getElementById('ts-response').value = '';
@@ -57,10 +59,11 @@
       document.getElementById('submitBtn').disabled = true;
     }
 
+    // API загрузится и вызовет tsReady — явно рендерим виджет
     function tsReady() {
       try {
         widgetId = turnstile.render('#ts-container', {
-          sitekey: '1x00000000000000000000AA',  // ← ВСТАВЬ СВОЙ SITE KEY
+          sitekey: 'SITE_KEY_HERE',  // ← ВСТАВЬ СВОЙ SITE KEY
           callback: tsOnSuccess,
           'expired-callback': tsOnExpired,
           'error-callback': tsOnError
@@ -72,9 +75,10 @@
     }
     window.tsReady = tsReady;
 
-    // Отправляем как application/x-www-form-urlencoded
+    // Отправляем как x-www-form-urlencoded (надёжно парсится на сервере)
     const form = document.getElementById('contactForm');
     const statusEl = document.getElementById('status');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       statusEl.textContent = 'Отправляю…'; statusEl.className = '';
@@ -93,16 +97,17 @@
           body: params
         });
         let data = null; try { data = await resp.json(); } catch {}
+        const msg = data
+          ? (data.error || data.text || resp.status) + (data.details ? ' (' + data.details + ')' : '')
+          : String(resp.status);
+
         if (resp.ok && data && data.ok) {
-          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className='ok';
+          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
           form.reset(); document.getElementById('submitBtn').disabled = true;
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
           document.getElementById('ts-status').textContent = '';
         } else {
-          const msg = data  ? (data.error || data.text || resp.status) + (data.details ? ' (' + data.details + ')' : '')
-   : String(resp.status);
-   statusEl.textContent = 'Ошибка: ' + msg;
-   statusEl.className='err';
+          statusEl.textContent = 'Ошибка: ' + msg;
           statusEl.className='err';
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
         }
@@ -113,4 +118,3 @@
   </script>
 </body>
 </html>
-

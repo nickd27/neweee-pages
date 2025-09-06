@@ -2,6 +2,18 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+   const form = await request.formData();
+const name = (form.get("name") || "").toString().trim();
+const email = (form.get("email") || "").toString().trim();
+const message = (form.get("message") || "").toString().trim();
+const token = form.get("cf-turnstile-response");
+
+// 👇 добавь это — логируем ТОЛЬКО ключи (без значений)
+const keys = [];
+for (const [k] of form.entries()) keys.push(k);
+console.log("Form keys:", keys.join(", "));
+console.log("Has Turnstile token:", !!token);
+
     // --- GET /env-check: проверка переменных окружения
     if (url.pathname === "/env-check" && request.method === "GET") {
       return new Response(JSON.stringify({

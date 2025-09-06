@@ -12,23 +12,27 @@
     .muted { color:#666; font-size:14px; }
     .ok { color: green; }
     .err { color: #c00; }
+    code{background:#f4f4f4;padding:.1rem .3rem;border-radius:.25rem}
   </style>
-
-  <!-- Turnstile: явный рендер, чтобы точно получить токен -->
+  <!-- Turnstile explicit -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 <body>
   <h1>Контакты</h1>
+
+  <p class="muted">
+    Host: <code id="host"></code> · Site key: <code id="sk-head"></code>
+  </p>
 
   <form id="contactForm" action="/contact" method="POST">
     <input name="name" placeholder="Ваше имя" required>
     <input name="email" type="email" placeholder="Ваш e-mail" required>
     <textarea name="message" placeholder="Сообщение" required></textarea>
 
-    <!-- скрытое поле под токен Turnstile -->
+    <!-- скрытое поле под токен -->
     <input type="hidden" name="cf-turnstile-response" id="ts-response">
 
-    <!-- сюда отрисуем виджет -->
+    <!-- контейнер для виджета -->
     <div id="ts-container"></div>
 
     <button type="submit" id="submitBtn" disabled>Отправить</button>
@@ -38,14 +42,20 @@
   <p id="status"></p>
 
   <script>
+    // ==== ВСТАВЬ СВОЙ РЕАЛЬНЫЙ SITE KEY НИЖЕ ====
+    const SITE_KEY = '0x4AAAAAABzuSh1PhYJkUsxg';
+
+    // Покажем текущий host и "голову" ключа — чтобы проверить, что правим нужный виджет
+    document.getElementById('host').textContent = location.hostname;
+    document.getElementById('sk-head').textContent = SITE_KEY.slice(0,8) + '…';
+
     let widgetId = null;
 
-    // Коллбэки Turnstile
     function tsOnSuccess(token) {
       const t = token || '';
       document.getElementById('ts-response').value = t;
       document.getElementById('ts-status').textContent =
-        'Turnstile OK: токен получен (' + t.length + ' символов, ' + t.slice(0,12) + '...)';
+        'Turnstile OK: токен получен (' + t.length + ' символов, ' + t.slice(0,12) + '…)';
       document.getElementById('submitBtn').disabled = !t;
     }
     function tsOnExpired() {
@@ -60,11 +70,10 @@
       document.getElementById('submitBtn').disabled = true;
     }
 
-    // Явный рендер виджета
     function tsReady() {
       try {
         widgetId = turnstile.render('#ts-container', {
-          sitekey: '0x4AAAAAABzuSh1PhYJkUsxg',  // ← ВСТАВЬ СВОЙ SITE KEY
+          sitekey: SITE_KEY,
           callback: tsOnSuccess,
           'expired-callback': tsOnExpired,
           'error-callback': tsOnError
@@ -76,10 +85,9 @@
     }
     window.tsReady = tsReady;
 
-    // Отправляем как x-www-form-urlencoded (надёжно парсится на сервере)
+    // Отправляем как x-www-form-urlencoded
     const form = document.getElementById('contactForm');
     const statusEl = document.getElementById('status');
-
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       statusEl.textContent = 'Отправляю…'; statusEl.className = '';
@@ -98,9 +106,12 @@
           body: params
         });
         let data = null; try { data = await resp.json(); } catch {}
-
-        // Покажем максимально полезную ошибку
-        if (!(resp.ok && data && data.ok)) {
+        if (resp.ok && data && data.ok) {
+          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
+          form.reset(); document.getElementById('submitBtn').disabled = true;
+          if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
+          document.getElementById('ts-status').textContent = '';
+        } else {
           const msg = (function(){
             if (!data) return 'status=' + resp.status + ' (нет тела)';
             const pieces = [
@@ -116,20 +127,11 @@
           statusEl.className = 'err';
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
           document.getElementById('submitBtn').disabled = true;
-          return;
         }
-
-        // Успех
-        statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
-        form.reset(); document.getElementById('submitBtn').disabled = true;
-        if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
-        document.getElementById('ts-status').textContent = '';
       } catch (err) {
-        statusEl.textContent = 'Сетевая ошибка: ' + err;
-        statusEl.className = 'err';
+        statusEl.textContent = 'Сетевая ошибка: ' + err; statusEl.className = 'err';
       }
     }, { capture: true });
   </script>
 </body>
 </html>
-ile-response" id="t

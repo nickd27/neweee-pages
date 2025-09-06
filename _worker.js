@@ -2,19 +2,19 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Route: GET /env-check
+    // --- GET /env-check: проверка переменных окружения
     if (url.pathname === "/env-check" && request.method === "GET") {
-      const body = JSON.stringify({
+      return new Response(JSON.stringify({
         ok: true,
         has_TURNSTILE_SECRET: !!env.TURNSTILE_SECRET,
         TURNSTILE_SITE_KEY_present: !!env.TURNSTILE_SITE_KEY,
         SEND_TO: env.SEND_TO || null,
-        SEND_DOMAIN: env.SEND_DOMAIN || null
-      });
-      return new Response(body, { headers: { "content-type": "application/json; charset=utf-8" } });
+        SEND_DOMAIN: env.SEND_DOMAIN || null,
+        has_MC_API_KEY: !!env.MC_API_KEY,   // ← добавили индикатор API-ключа
+      }), { headers: { "content-type": "application/json; charset=utf-8" } });
     }
 
-    // Route: POST /contact
+    // --- POST /contact: Turnstile -> MailChannels
     if (url.pathname === "/contact" && request.method === "POST") {
       try {
         const form = await request.formData();
@@ -25,11 +25,14 @@ export default {
 
         if (!token) return json(400, { ok:false, error:"turnstile_token_missing" });
 
-        // Verify Turnstile
+        // 1) Проверка Turnstile
         const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
           method: "POST",
           headers: { "content-type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ secret: env.TURNSTILE_SECRET || "", response: token }),
+          body: new URLSearchParams({
+            secret: env.TURNSTILE_SECRET || "",
+            response: token,
+          }),
         });
         const verifyData = await verifyRes.json();
         console.log("Turnstile:", verifyData);
@@ -37,6 +40,7 @@ export default {
           return json(400, { ok:false, error:"turnstile_failed", details: verifyData["error-codes"] });
         }
 
+        // 2) Подготовка письма
         const SEND_TO = env.SEND_TO;
         const SEND_DOMAIN = env.SEND_DOMAIN;
         const FROM_NAME = env.FROM_NAME || "Website Contact";
@@ -44,6 +48,9 @@ export default {
 
         if (!SEND_TO || !SEND_DOMAIN) {
           return json(500, { ok:false, error:"mail_env_missing", hint:"Нужны SEND_TO и SEND_DOMAIN" });
+        }
+        if (!env.MC_API_KEY) {
+          return json(500, { ok:false, error:"missing_MC_API_KEY" });
         }
 
         const mail = {
@@ -54,23 +61,15 @@ export default {
           headers: REPLY_TO ? { "Reply-To": REPLY_TO } : undefined,
         };
 
-        if (!env.MC_API_KEY) {
-        return json(500, { ok: false, error: "missing_MC_API_KEY" });
-        }
-
-   // во /env-check можно добавить:
-has_MC_API_KEY: !!env.MC_API_KEY
-
-// при отправке письма:
-const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {
-  method: "POST",
-  headers: {
-    "content-type": "application/json",
-    "X-Api-Key": env.MC_API_KEY, // критично
-  },
-  body: JSON.stringify(mail),
-});
-
+        // 3) Отправка в MailChannels — ОБЯЗАТЕЛЕН заголовок X-Api-Key
+        const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "X-Api-Key": env.MC_API_KEY,   // ← вот это главное
+          },
+          body: JSON.stringify(mail),
+        });
 
         const text = await mcRes.text();
         console.log("MailChannels:", mcRes.status, text.slice(0, 300));
@@ -86,7 +85,7 @@ const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {
       }
     }
 
-    // Static assets fallback
+    // --- Статика по умолчанию
     return env.ASSETS.fetch(request);
   }
 }

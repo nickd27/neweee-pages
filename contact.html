@@ -1,20 +1,19 @@
 <!doctype html>
 <html lang="ru">
-
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Контакты</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
-    form { max-width: 560px; display:grid; gap:.75rem; }
-    input, textarea, button { font: inherit; padding:.6rem .7rem; }
-    textarea { min-height: 140px; }
-    .muted { color:#666; font-size:14px; }
-    .ok { color: green; }
-    .err { color: #c00; }
+    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin:2rem; line-height:1.5; }
+    form { max-width:560px; display:grid; gap:.75rem; }
+    input,textarea,button { font:inherit; padding:.6rem .7rem; }
+    textarea { min-height:140px; }
+    .muted{color:#666;font-size:14px}
+    .ok{color:green} .err{color:#c00}
     code{background:#f4f4f4;padding:.1rem .3rem;border-radius:.25rem}
   </style>
-  <!-- Turnstile explicit -->
+  <!-- explicit render + onload -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 <body>
@@ -29,10 +28,7 @@
     <input name="email" type="email" placeholder="Ваш e-mail" required>
     <textarea name="message" placeholder="Сообщение" required></textarea>
 
-    <!-- скрытое поле под токен -->
     <input type="hidden" name="cf-turnstile-response" id="ts-response">
-
-    <!-- контейнер для виджета -->
     <div id="ts-container"></div>
 
     <button type="submit" id="submitBtn" disabled>Отправить</button>
@@ -42,96 +38,94 @@
   <p id="status"></p>
 
   <script>
-    // ==== ВСТАВЬ СВОЙ РЕАЛЬНЫЙ SITE KEY НИЖЕ ====
-    const SITE_KEY = '0x4AAAAAABzuSh1PhYJkUsxg';
-
-    // Покажем текущий host и "голову" ключа — чтобы проверить, что правим нужный виджет
+    const SITE_KEY = '0x4AAAAAABzukrBYa83MJypa';   // ← ВСТАВЬ СВОЙ НОВЫЙ SITE KEY
     document.getElementById('host').textContent = location.hostname;
     document.getElementById('sk-head').textContent = SITE_KEY.slice(0,8) + '…';
 
-    let widgetId = null;
+    let widgetId = null, retryTimer = null;
 
-    function tsOnSuccess(token) {
-      const t = token || '';
-      document.getElementById('ts-response').value = t;
-      document.getElementById('ts-status').textContent =
-        'Turnstile OK: токен получен (' + t.length + ' символов, ' + t.slice(0,12) + '…)';
-      document.getElementById('submitBtn').disabled = !t;
-    }
-    function tsOnExpired() {
-      document.getElementById('ts-response').value = '';
-      document.getElementById('ts-status').textContent = 'Turnstile истёк — подтвердите заново';
-      document.getElementById('submitBtn').disabled = true;
-      if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
-    }
-    function tsOnError() {
-      document.getElementById('ts-response').value = '';
-      document.getElementById('ts-status').textContent = 'Turnstile ошибка — проверьте домены/блокировщики';
-      document.getElementById('submitBtn').disabled = true;
-    }
+    function setStatus(msg, cls){ const el = document.getElementById('ts-status'); el.textContent = msg; el.className='muted ' + (cls||''); }
+    function enableSubmit(enabled){ document.getElementById('submitBtn').disabled = !enabled; }
 
-    function tsReady() {
-      try {
+    function renderWidget(){
+      clearTimeout(retryTimer);
+      try{
+        if (widgetId !== null && window.turnstile) turnstile.reset(widgetId);
         widgetId = turnstile.render('#ts-container', {
           sitekey: SITE_KEY,
           callback: tsOnSuccess,
           'expired-callback': tsOnExpired,
           'error-callback': tsOnError
         });
-        document.getElementById('ts-status').textContent = 'Turnstile загружен, подтвердите проверку';
-      } catch(e) {
-        document.getElementById('ts-status').textContent = 'Ошибка инициализации Turnstile: ' + e;
+        setStatus('Turnstile загружен, подтвердите проверку');
+        enableSubmit(false);
+      }catch(e){
+        setStatus('Ошибка инициализации Turnstile: '+e, 'err');
       }
     }
+
+    function tsOnSuccess(token){
+      const t = token || '';
+      document.getElementById('ts-response').value = t;
+      setStatus('Turnstile OK: токен получен ('+t.length+' симв.)','ok');
+      enableSubmit(!!t);
+    }
+    function tsOnExpired(){
+      document.getElementById('ts-response').value = '';
+      setStatus('Turnstile истёк — обновляю…');
+      enableSubmit(false);
+      retryTimer = setTimeout(()=>renderWidget(), 1200); // авто-перерендер через 1.2с
+    }
+    function tsOnError(err){
+      document.getElementById('ts-response').value = '';
+      setStatus('Turnstile error: '+(err||'unknown')+' — пробую снова…','err');
+      enableSubmit(false);
+      retryTimer = setTimeout(()=>renderWidget(), 1500); // авто-перерендер через 1.5с
+    }
+
+    function tsReady(){ renderWidget(); }
     window.tsReady = tsReady;
 
-    // Отправляем как x-www-form-urlencoded
+    // Отправка как x-www-form-urlencoded
     const form = document.getElementById('contactForm');
     const statusEl = document.getElementById('status');
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e)=>{
       e.preventDefault();
-      statusEl.textContent = 'Отправляю…'; statusEl.className = '';
-
+      statusEl.textContent = 'Отправляю…'; statusEl.className='';
       const tok = document.getElementById('ts-response').value;
-      if (!tok) { statusEl.textContent = 'Подтвердите проверку «Я не робот»'; statusEl.className='err'; return; }
+      if(!tok){ statusEl.textContent='Подтвердите проверку «Я не робот»'; statusEl.className='err'; return; }
 
       const fd = new FormData(form);
-      const params = new URLSearchParams();
-      for (const [k, v] of fd.entries()) params.append(k, v.toString());
+      const params = new URLSearchParams(); for (const [k,v] of fd.entries()) params.append(k, v.toString());
 
-      try {
-        const resp = await fetch(form.action, {
-          method: 'POST',
-          headers: { 'content-type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-          body: params
-        });
-        let data = null; try { data = await resp.json(); } catch {}
-        if (resp.ok && data && data.ok) {
-          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
-          form.reset(); document.getElementById('submitBtn').disabled = true;
-          if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
-          document.getElementById('ts-status').textContent = '';
-        } else {
+      try{
+        const resp = await fetch(form.action, { method:'POST', headers:{'content-type':'application/x-www-form-urlencoded;charset=UTF-8'}, body: params });
+        let data=null; try{ data = await resp.json(); }catch{}
+        if(resp.ok && data && data.ok){
+          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className='ok';
+          form.reset(); enableSubmit(false);
+          if(window.turnstile && widgetId!==null) turnstile.reset(widgetId);
+          setStatus('');
+        }else{
           const msg = (function(){
-            if (!data) return 'status=' + resp.status + ' (нет тела)';
+            if(!data) return 'status='+resp.status+' (нет тела)';
             const pieces = [
-              'status=' + resp.status,
-              data.status != null ? ('mcStatus=' + data.status) : null,
-              data.error ? ('error=' + data.error) : null,
-              data.details ? ('details=' + data.details) : null,
-              data.text ? ('text=' + String(data.text).slice(0,160).replace(/\s+/g,' ')) : null
+              'status='+resp.status,
+              data.status!=null?('mcStatus='+data.status):null,
+              data.error?('error='+data.error):null,
+              data.details?('details='+data.details):null,
+              data.text?('text='+String(data.text).slice(0,160).replace(/\s+/g,' ')):null
             ].filter(Boolean);
             return pieces.join(' | ');
           })();
-          statusEl.textContent = 'Ошибка: ' + msg;
-          statusEl.className = 'err';
-          if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
-          document.getElementById('submitBtn').disabled = true;
+          statusEl.textContent = 'Ошибка: '+msg; statusEl.className='err';
+          if(window.turnstile && widgetId!==null) turnstile.reset(widgetId);
+          enableSubmit(false);
         }
-      } catch (err) {
-        statusEl.textContent = 'Сетевая ошибка: ' + err; statusEl.className = 'err';
+      }catch(err){
+        statusEl.textContent = 'Сетевая ошибка: '+err; statusEl.className='err';
       }
-    }, { capture: true });
+    }, { capture:true });
   </script>
 </body>
 </html>

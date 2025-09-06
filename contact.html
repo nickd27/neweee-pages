@@ -14,7 +14,7 @@
     .err { color: #c00; }
   </style>
 
-  <!-- Turnstile: явный рендер, чтобы контролировать токен -->
+  <!-- Turnstile: явный рендер, чтобы точно получить токен -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 <body>
@@ -40,6 +40,7 @@
   <script>
     let widgetId = null;
 
+    // Коллбэки Turnstile
     function tsOnSuccess(token) {
       const t = token || '';
       document.getElementById('ts-response').value = t;
@@ -59,7 +60,7 @@
       document.getElementById('submitBtn').disabled = true;
     }
 
-    // API загрузится и вызовет tsReady — явно рендерим виджет
+    // Явный рендер виджета
     function tsReady() {
       try {
         widgetId = turnstile.render('#ts-container', {
@@ -97,24 +98,38 @@
           body: params
         });
         let data = null; try { data = await resp.json(); } catch {}
-        const msg = data
-          ? (data.error || data.text || resp.status) + (data.details ? ' (' + data.details + ')' : '')
-          : String(resp.status);
 
-        if (resp.ok && data && data.ok) {
-          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
-          form.reset(); document.getElementById('submitBtn').disabled = true;
-          if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
-          document.getElementById('ts-status').textContent = '';
-        } else {
+        // Покажем максимально полезную ошибку
+        if (!(resp.ok && data && data.ok)) {
+          const msg = (function(){
+            if (!data) return 'status=' + resp.status + ' (нет тела)';
+            const pieces = [
+              'status=' + resp.status,
+              data.status != null ? ('mcStatus=' + data.status) : null,
+              data.error ? ('error=' + data.error) : null,
+              data.details ? ('details=' + data.details) : null,
+              data.text ? ('text=' + String(data.text).slice(0,160).replace(/\s+/g,' ')) : null
+            ].filter(Boolean);
+            return pieces.join(' | ');
+          })();
           statusEl.textContent = 'Ошибка: ' + msg;
-          statusEl.className='err';
+          statusEl.className = 'err';
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
+          document.getElementById('submitBtn').disabled = true;
+          return;
         }
+
+        // Успех
+        statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
+        form.reset(); document.getElementById('submitBtn').disabled = true;
+        if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
+        document.getElementById('ts-status').textContent = '';
       } catch (err) {
-        statusEl.textContent = 'Сетевая ошибка: ' + err; statusEl.className='err';
+        statusEl.textContent = 'Сетевая ошибка: ' + err;
+        statusEl.className = 'err';
       }
     }, { capture: true });
   </script>
 </body>
 </html>
+ile-response" id="t

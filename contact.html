@@ -99,7 +99,10 @@
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
           document.getElementById('ts-status').textContent = '';
         } else {
-          statusEl.textContent = 'Ошибка: ' + (data && (data.error || data.text) || resp.status);
+          const msg = data  ? (data.error || data.text || resp.status) + (data.details ? ' (' + data.details + ')' : '')
+   : String(resp.status);
+   statusEl.textContent = 'Ошибка: ' + msg;
+   statusEl.className='err';
           statusEl.className='err';
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
         }

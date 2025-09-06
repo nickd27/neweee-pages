@@ -54,14 +54,18 @@ export default {
           headers: REPLY_TO ? { "Reply-To": REPLY_TO } : undefined,
         };
 
+        if (!env.MC_API_KEY) {
+        return json(500, { ok: false, error: "missing_MC_API_KEY" });
+        }
+
         const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {
-  method: "POST",
-  headers: {
-    "content-type": "application/json",
-    "X-Api-Key": env.MC_API_KEY, // ← новый обязательный заголовок
-  },
-  body: JSON.stringify(mail),
-});
+        method: "POST",
+        headers: {
+       "content-type": "application/json",
+       "X-Api-Key": env.MC_API_KEY, // ← новый обязательный заголовок
+       },
+       body: JSON.stringify(mail),
+       });
 
         const text = await mcRes.text();
         console.log("MailChannels:", mcRes.status, text.slice(0, 300));

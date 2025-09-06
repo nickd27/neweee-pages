@@ -3,18 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Контакты — форма</title>
+  <title>Контакты — явный рендер Turnstile</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
     form { max-width: 560px; display:grid; gap:.75rem; }
     input, textarea, button { font: inherit; padding:.6rem .7rem; }
     textarea { min-height: 140px; }
+    .muted { color:#666; font-size:14px; }
     .ok { color: green; }
     .err { color: #c00; }
-    .muted { color:#666; font-size:14px; }
   </style>
-  <!-- Turnstile -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <!-- Подключаем API в режиме явного рендера -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 <body>
   <h1>Контакты</h1>
@@ -27,36 +28,84 @@
     <!-- скрытое поле под токен -->
     <input type="hidden" name="cf-turnstile-response" id="ts-response">
 
-    <!-- ВИДЖЕТ ДОЛЖЕН быть ВНУТРИ <form>. ВСТАВЬТЕ СВОЙ SITE KEY: -->
-    <div class="cf-turnstile"
-         data-sitekey="0x4AAAAAABzsfweLC5RtGe8B"
-         data-callback="tsOnSuccess"
-         data-expired-callback="tsOnExpired"
-         data-error-callback="tsOnError"
-         data-theme="auto"></div>
+    <!-- контейнер, куда мы ЯВНО отрендерим виджет -->
+    <div id="ts-container"></div>
 
-    <button type="submit">Отправить</button>
+    <button type="submit" id="submitBtn" disabled>Отправить</button>
   </form>
 
   <p id="ts-status" class="muted"></p>
   <p id="status"></p>
 
   <script>
-    // коллбэки Turnstile: пишем токен в скрытое поле
-    function tsOnSuccess(token){
+    let widgetId = null;
+
+    // коллбэки Turnstile
+    function tsOnSuccess(token) {
       document.getElementById('ts-response').value = token || '';
       document.getElementById('ts-status').textContent = 'Turnstile OK: токен получен';
+      document.getElementById('submitBtn').disabled = !token;
     }
-    function tsOnExpired(){
+    function tsOnExpired() {
       document.getElementById('ts-response').value = '';
       document.getElementById('ts-status').textContent = 'Turnstile истёк — подтвердите заново';
+      document.getElementById('submitBtn').disabled = true;
+      if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
     }
-    function tsOnError(){
+    function tsOnError() {
       document.getElementById('ts-response').value = '';
       document.getElementById('ts-status').textContent = 'Turnstile ошибка — проверьте домены/блокировщики';
+      document.getElementById('submitBtn').disabled = true;
     }
 
-    // Надёжно отправляем именно POST с FormData
+    // API загрузится и вызовет tsReady — здесь мы ЯВНО рендерим виджет
+    function tsReady() {
+      try {
+        widgetId = turnstile.render('#ts-container', {
+          sitekey: '0x4AAAAAABzsfweLC5RtGe8B',     // ← ВСТАВЬТЕ СВОЙ SITE KEY
+          callback: tsOnSuccess,
+          'expired-callback': tsOnExpired,
+          'error-callback': tsOnError
+        });
+        document.getElementById('ts-status').textContent = 'Turnstile загружен, подтвердите проверку';
+      } catch(e) {
+        document.getElementById('ts-status').textContent = 'Ошибка инициализации Turnstile: ' + e;
+      }
+    }
+    window.tsReady = tsReady;  // делаем доступным глобально
+
+    // безопасная отправка через fetch с FormData (гарантированный POST)
     const form = document.getElementById('contactForm');
-    const statusEl = doc
+    const statusEl = document.getElementById('status');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = 'Отправляю…'; statusEl.className = '';
+
+      const tok = document.getElementById('ts-response').value;
+      if (!tok) {
+        statusEl.textContent = 'Подтвердите проверку «Я не робот».';
+        statusEl.className = 'err';
+        return;
+      }
+      try {
+        const resp = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+        let data = null; try { data = await resp.json(); } catch {}
+        if (resp.ok && data && data.ok) {
+          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
+          form.reset(); document.getElementById('submitBtn').disabled = true;
+          if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
+          document.getElementById('ts-status').textContent = '';
+        } else {
+          statusEl.textContent = 'Ошибка: ' + (data && (data.error || data.text) || resp.status);
+          statusEl.className = 'err';
+          if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
+        }
+      } catch (err) {
+        statusEl.textContent = 'Сетевая ошибка: ' + err;
+        statusEl.className = 'err';
+      }
+    }, { capture: true });
+  </script>
+</body>
+</html>
 

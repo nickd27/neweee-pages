@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Контакты — явный рендер Turnstile</title>
+  <title>Контакты</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
     form { max-width: 560px; display:grid; gap:.75rem; }
@@ -14,7 +14,7 @@
     .err { color: #c00; }
   </style>
 
-  <!-- Подключаем API в режиме явного рендера -->
+  <!-- Turnstile explicit -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 <body>
@@ -28,7 +28,7 @@
     <!-- скрытое поле под токен -->
     <input type="hidden" name="cf-turnstile-response" id="ts-response">
 
-    <!-- контейнер, куда мы ЯВНО отрендерим виджет -->
+    <!-- сюда явно отрисуем виджет -->
     <div id="ts-container"></div>
 
     <button type="submit" id="submitBtn" disabled>Отправить</button>
@@ -40,7 +40,6 @@
   <script>
     let widgetId = null;
 
-    // коллбэки Turnstile
     function tsOnSuccess(token) {
       document.getElementById('ts-response').value = token || '';
       document.getElementById('ts-status').textContent = 'Turnstile OK: токен получен';
@@ -58,11 +57,10 @@
       document.getElementById('submitBtn').disabled = true;
     }
 
-    // API загрузится и вызовет tsReady — здесь мы ЯВНО рендерим виджет
     function tsReady() {
       try {
         widgetId = turnstile.render('#ts-container', {
-          sitekey: '0x4AAAAAABzsfweLC5RtGe8B',     // ← ВСТАВЬТЕ СВОЙ SITE KEY
+          sitekey: '0x4AAAAAABzsfweLC5RtGe8B',  // ← ВСТАВЬ СВОЙ SITE KEY
           callback: tsOnSuccess,
           'expired-callback': tsOnExpired,
           'error-callback': tsOnError
@@ -72,9 +70,9 @@
         document.getElementById('ts-status').textContent = 'Ошибка инициализации Turnstile: ' + e;
       }
     }
-    window.tsReady = tsReady;  // делаем доступным глобально
+    window.tsReady = tsReady;
 
-    // безопасная отправка через fetch с FormData (гарантированный POST)
+    // Отправляем как application/x-www-form-urlencoded
     const form = document.getElementById('contactForm');
     const statusEl = document.getElementById('status');
     form.addEventListener('submit', async (e) => {
@@ -82,27 +80,31 @@
       statusEl.textContent = 'Отправляю…'; statusEl.className = '';
 
       const tok = document.getElementById('ts-response').value;
-      if (!tok) {
-        statusEl.textContent = 'Подтвердите проверку «Я не робот».';
-        statusEl.className = 'err';
-        return;
-      }
+      if (!tok) { statusEl.textContent = 'Подтвердите проверку «Я не робот»'; statusEl.className='err'; return; }
+
+      const fd = new FormData(form);
+      const params = new URLSearchParams();
+      for (const [k, v] of fd.entries()) params.append(k, v.toString());
+
       try {
-        const resp = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+        const resp = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: params
+        });
         let data = null; try { data = await resp.json(); } catch {}
         if (resp.ok && data && data.ok) {
-          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className = 'ok';
+          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className='ok';
           form.reset(); document.getElementById('submitBtn').disabled = true;
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
           document.getElementById('ts-status').textContent = '';
         } else {
           statusEl.textContent = 'Ошибка: ' + (data && (data.error || data.text) || resp.status);
-          statusEl.className = 'err';
+          statusEl.className='err';
           if (window.turnstile && widgetId !== null) turnstile.reset(widgetId);
         }
       } catch (err) {
-        statusEl.textContent = 'Сетевая ошибка: ' + err;
-        statusEl.className = 'err';
+        statusEl.textContent = 'Сетевая ошибка: ' + err; statusEl.className='err';
       }
     }, { capture: true });
   </script>

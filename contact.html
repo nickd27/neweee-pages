@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Контакты — форма</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+    form { max-width: 560px; display:grid; gap:.75rem; }
+    input, textarea, button { font: inherit; padding:.6rem .7rem; }
+    textarea { min-height: 140px; }
+    .ok { color: green; }
+    .err { color: #c00; }
+  </style>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+  <h1>Контакты</h1>
+  <form id="contactForm" action="/contact" method="POST">
+    <input name="name" placeholder="Ваше имя" required>
+    <input name="email" type="email" placeholder="Ваш e-mail" required>
+    <textarea name="message" placeholder="Сообщение" required></textarea>
+    <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="auto"></div>
+    <button type="submit">Отправить</button>
+  </form>
+  <p id="status"></p>
+  <script>
+  const form = document.getElementById('contactForm');
+  const statusEl = document.getElementById('status');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.textContent = 'Отправляю…'; statusEl.className='';
+    const resp = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+    let data = null; try { data = await resp.json(); } catch(e) {}
+    if (resp.ok && data && data.ok) { statusEl.textContent = 'Сообщение отправлено.'; statusEl.className='ok'; form.reset(); if (window.turnstile) turnstile.reset(); }
+    else { statusEl.textContent = 'Ошибка: ' + (data && (data.error || data.text) || resp.status); statusEl.className='err'; if (window.turnstile) turnstile.reset(); }
+  });
+  </script>
+</body>
+</html>

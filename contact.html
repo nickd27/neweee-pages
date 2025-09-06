@@ -11,53 +11,75 @@
     textarea { min-height: 140px; }
     .ok { color: green; }
     .err { color: #c00; }
+    .muted { color:#666; font-size:14px; }
   </style>
+  <!-- Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
   <h1>Контакты</h1>
- <form id="contactForm" action="/contact" method="POST">
-  <input name="name" placeholder="Ваше имя" required>
-  <input name="email" type="email" placeholder="Ваш e-mail" required>
-  <textarea name="message" placeholder="Сообщение" required></textarea>
+  <form id="contactForm" action="/contact" method="POST">
+    <input name="name" placeholder="Ваше имя" required>
+    <input name="email" type="email" placeholder="Ваш e-mail" required>
+    <textarea name="message" placeholder="Сообщение" required></textarea>
 
-  <!-- Скрытое поле под токен Turnstile -->
-  <input type="hidden" name="cf-turnstile-response" id="ts-response">
+    <!-- скрытое поле под токен Turnstile -->
+    <input type="hidden" name="cf-turnstile-response" id="ts-response">
 
-  <!-- Виджет Turnstile ДОЛЖЕН быть ВНУТРИ <form> -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  <div class="cf-turnstile"
-       data-sitekey="0x4AAAAAABzsfweLC5RtGe8B"
-       data-callback="tsOnSuccess"
-       data-expired-callback="tsOnExpired"
-       data-error-callback="tsOnError"></div>
+    <!-- ВИДЖЕТ ДОЛЖЕН быть ВНУТРИ <form>. Подставьте ваш SITE KEY: -->
+    <div class="cf-turnstile"
+         data-sitekey="0x4AAAAAABzsfweLC5RtGe8B"
+         data-callback="tsOnSuccess"
+         data-expired-callback="tsOnExpired"
+         data-error-callback="tsOnError"></div>
 
-  <button type="submit">Отправить</button>
-</form>
+    <button type="submit">Отправить</button>
+  </form>
 
-<script>
-// Коллбэки Turnstile заполняют/очищают скрытое поле
-function tsOnSuccess(token) {
-  document.getElementById('ts-response').value = token || '';
-}
-function tsOnExpired() {
-  document.getElementById('ts-response').value = '';
-}
-function tsOnError() {
-  document.getElementById('ts-response').value = '';
-}
+  <p id="ts-status" class="muted"></p>
+  <p id="status"></p>
 
-// (необязательно) если у тебя JS-отправка через fetch:
-// оставь как есть, только перед отправкой проверяй наличие токена:
-const form = document.getElementById('contactForm');
-form.addEventListener('submit', (e) => {
-  const tok = document.getElementById('ts-response').value;
-  if (!tok) {
-    e.preventDefault();
-    alert('Подтвердите проверку “Я не робот” и попробуйте снова.');
-  }
-}, { capture: true });
-</script>
+  <script>
+    // коллбэки Turnstile управляют скрытым полем и индикатором
+    function tsOnSuccess(token){ 
+      document.getElementById('ts-response').value = token || '';
+      document.getElementById('ts-status').textContent = 'Turnstile OK: токен получен';
+    }
+    function tsOnExpired(){ 
+      document.getElementById('ts-response').value = '';
+      document.getElementById('ts-status').textContent = 'Turnstile истёк — подтвердите заново';
+    }
+    function tsOnError(){ 
+      document.getElementById('ts-response').value = '';
+      document.getElementById('ts-status').textContent = 'Turnstile ошибка — проверьте домены/блокировщики';
+    }
 
+    // отправка через fetch (POST /contact)
+    const form = document.getElementById('contactForm');
+    const statusEl = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // не даём браузеру уйти GET’ом
+      statusEl.textContent = 'Отправляю…'; statusEl.className = '';
+
+      const token = document.getElementById('ts-response').value;
+      if (!token) { statusEl.textContent = 'Подтвердите проверку «Я не робот»'; statusEl.className='err'; return; }
+
+      try {
+        const resp = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+        let data = null; try { data = await resp.json(); } catch(e) {}
+        if (resp.ok && data && data.ok) {
+          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className='ok';
+          form.reset(); if (window.turnstile) turnstile.reset();
+        } else {
+          statusEl.textContent = 'Ошибка: ' + (data && (data.error || data.text) || resp.status);
+          statusEl.className='err'; if (window.turnstile) turnstile.reset();
+        }
+      } catch(err) {
+        statusEl.textContent = 'Сетевая ошибка: ' + err; statusEl.className='err';
+      }
+    }, { capture: true });
+  </script>
 </body>
 </html>
+

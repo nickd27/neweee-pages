@@ -9,27 +9,115 @@
     form { max-width:560px; display:grid; gap:.75rem; }
     input,textarea,button { font:inherit; padding:.6rem .7rem; }
     textarea { min-height:140px; }
-    .muted{color:#666;font-size:14px}
+    .muted{color:#666;font-size:14px} .ok{color:green} .err{color:#c00}
+    code{background:#f4f4f4;padding:.1rem .3rem;border-radius:.25rem}
   </style>
-  <!-- Обязателен для появления виджета -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <!-- Turnstile explicit -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 <body>
   <h1>Контакты</h1>
 
-  <form action="/contact" method="POST">
+  <p class="muted">Host: <code id="host"></code> · Site key: <code id="sk-head"></code></p>
+
+  <form id="contactForm" action="/contact" method="POST">
     <input name="name" placeholder="Ваше имя" required>
     <input name="email" type="email" placeholder="Ваш e-mail" required>
     <textarea name="message" placeholder="Сообщение" required></textarea>
 
-    <!-- Виджет ДОЛЖЕН быть внутри <form>. Подставьте ваш реальный site key: -->
-   <div class="cf-turnstile" data-sitekey="0x4AAAAAABzukrBYa83MJypa"></div>
+    <!-- токен -->
+    <input type="hidden" name="cf-turnstile-response" id="ts-response">
+    <!-- контейнер виджета -->
+    <div id="ts-container"></div>
 
-
-    <button type="submit">Отправить</button>
+    <button type="submit" id="submitBtn" disabled>Отправить</button>
   </form>
 
-  <p class="muted">После отправки вы увидите JSON-ответ от сервера — это нормально для теста.</p>
+  <p id="ts-status" class="muted"></p>
+  <p id="status"></p>
+
+  <script>
+    // ==== ВСТАВЬ СВОИ КЛЮЧИ НИЖЕ ====
+    const SITEKEY_PAGES = '0x4AAAAAABzuSh1PhYJkUsxg'; // allowlist: neweee-pages.pages.dev
+    const SITEKEY_PROD  = '0x4AAAAAABzukrBYa83MJypa';  // allowlist: ne​weee.com, www.ne​weee.com
+
+    function pickSiteKey() {
+      const h = location.hostname;
+      if (h.endsWith('neweee-pages.pages.dev')) return SITEKEY_PAGES;
+      if (h === 'neweee.com' || h === 'www.neweee.com') return SITEKEY_PROD;
+      return SITEKEY_PAGES; // запасной
+    }
+    const SITE_KEY = pickSiteKey();
+
+    document.getElementById('host').textContent = location.hostname;
+    document.getElementById('sk-head').textContent = SITE_KEY ? (SITE_KEY.slice(0,8) + '…') : '(нет)';
+
+    let widgetId = null;
+
+    function setStatus(msg, cls){ const el = document.getElementById('ts-status'); el.textContent = msg||''; el.className='muted '+(cls||''); }
+    function enableSubmit(on){ document.getElementById('submitBtn').disabled = !on; }
+
+    function tsReady(){
+      try{
+        widgetId = turnstile.render('#ts-container', {
+          sitekey: SITE_KEY,
+          retry: 'never',
+          callback: (token)=>{
+            document.getElementById('ts-response').value = token || '';
+            setStatus('Turnstile OK: токен получен', 'ok');
+            enableSubmit(!!token);
+          },
+          'expired-callback': ()=>{
+            document.getElementById('ts-response').value = '';
+            setStatus('Turnstile истёк — подтвердите заново');
+            enableSubmit(false);
+          },
+          'error-callback': (err)=>{
+            document.getElementById('ts-response').value = '';
+            setStatus('Turnstile error: '+(err||'unknown')+' — проверьте allowlist/блокировщики', 'err');
+            enableSubmit(false);
+          }
+        });
+        setStatus('Turnstile загружен, подтвердите проверку');
+      }catch(e){
+        setStatus('Ошибка инициализации Turnstile: '+e, 'err');
+      }
+    }
+    window.tsReady = tsReady;
+
+    // Отправка как x-www-form-urlencoded
+    const form = document.getElementById('contactForm');
+    const statusEl = document.getElementById('status');
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      statusEl.textContent = 'Отправляю…'; statusEl.className='';
+
+      const tok = document.getElementById('ts-response').value;
+      if(!tok){ statusEl.textContent = 'Подтвердите проверку «Я не робот»'; statusEl.className='err'; return; }
+
+      const fd = new FormData(form);
+      const params = new URLSearchParams(); for (const [k,v] of fd.entries()) params.append(k, v.toString());
+
+      try{
+        const resp = await fetch(form.action, { method:'POST', headers:{'content-type':'application/x-www-form-urlencoded;charset=UTF-8'}, body: params });
+        let data=null; try{ data = await resp.json(); }catch{}
+        if(resp.ok && data && data.ok){
+          statusEl.textContent = 'Сообщение отправлено.'; statusEl.className='ok';
+          form.reset(); enableSubmit(false);
+          if(window.turnstile && widgetId!==null) turnstile.reset(widgetId);
+          setStatus('');
+        }else{
+          const msg = !data ? ('status='+resp.status+' (нет тела)') :
+            ['status='+resp.status, data.status!=null?('mcStatus='+data.status):null, data.error?('error='+data.error):null, data.details?('details='+data.details):null, data.text?('text='+String(data.text).slice(0,160).replace(/\s+/g,' ')):null].filter(Boolean).join(' | ');
+          statusEl.textContent = 'Ошибка: '+msg; statusEl.className='err';
+          if(window.turnstile && widgetId!==null) turnstile.reset(widgetId);
+          enableSubmit(false);
+        }
+      }catch(err){
+        statusEl.textContent = 'Сетевая ошибка: '+err; statusEl.className='err';
+      }
+    }, { capture:true });
+  </script>
 </body>
 </html>
 

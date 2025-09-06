@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Контакты — минимальная форма</title>
+  <title>Контакты — форма</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
     form { max-width: 560px; display:grid; gap:.75rem; }
     input, textarea, button { font: inherit; padding:.6rem .7rem; }
     textarea { min-height: 140px; }
+    .ok { color: green; }
+    .err { color: #c00; }
     .muted { color:#666; font-size:14px; }
   </style>
   <!-- Turnstile -->
@@ -17,17 +19,44 @@
 <body>
   <h1>Контакты</h1>
 
-  <form action="/contact" method="POST">
+  <form id="contactForm" action="/contact" method="POST">
     <input name="name" placeholder="Ваше имя" required>
     <input name="email" type="email" placeholder="Ваш e-mail" required>
     <textarea name="message" placeholder="Сообщение" required></textarea>
 
-    <!-- ВИДЖЕТ ДОЛЖЕН быть ВНУТРИ формы. Подставьте ваш SITE KEY: -->
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAABzsfweLC5RtGe8B"></div>
+    <!-- скрытое поле под токен -->
+    <input type="hidden" name="cf-turnstile-response" id="ts-response">
+
+    <!-- ВИДЖЕТ ДОЛЖЕН быть ВНУТРИ <form>. ВСТАВЬТЕ СВОЙ SITE KEY: -->
+    <div class="cf-turnstile"
+         data-sitekey="ВАШ_SITE_KEY"
+         data-callback="tsOnSuccess"
+         data-expired-callback="tsOnExpired"
+         data-error-callback="tsOnError"
+         data-theme="auto"></div>
 
     <button type="submit">Отправить</button>
   </form>
 
-  <p class="muted">После отправки вы увидите JSON-ответ. Это нормально для теста.</p>
-</body>
-</html>
+  <p id="ts-status" class="muted"></p>
+  <p id="status"></p>
+
+  <script>
+    // коллбэки Turnstile: пишем токен в скрытое поле
+    function tsOnSuccess(token){
+      document.getElementById('ts-response').value = token || '';
+      document.getElementById('ts-status').textContent = 'Turnstile OK: токен получен';
+    }
+    function tsOnExpired(){
+      document.getElementById('ts-response').value = '';
+      document.getElementById('ts-status').textContent = 'Turnstile истёк — подтвердите заново';
+    }
+    function tsOnError(){
+      document.getElementById('ts-response').value = '';
+      document.getElementById('ts-status').textContent = 'Turnstile ошибка — проверьте домены/блокировщики';
+    }
+
+    // Надёжно отправляем именно POST с FormData
+    const form = document.getElementById('contactForm');
+    const statusEl = doc
+

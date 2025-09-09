@@ -76,6 +76,11 @@ export default {
             reply_to: REPLY_TO ? { email: REPLY_TO } : undefined,
             subject: `Сообщение с сайта: ${name || "без имени"}`,
             content: [{ type: "text/plain", value: `От: ${name}\nEmail: ${email}\n\n${message}` }],
+         
+            if (env.DKIM_PRIVATE_KEY && (env.DKIM_SELECTOR || env.DKIM_DOMAIN || SEND_DOMAIN)) {
+            mail.dkim_domain = env.DKIM_DOMAIN || SEND_DOMAIN; // d=neweee.com
+            mail.dkim_selector = env.DKIM_SELECTOR;            // s=mc1
+            mail.dkim_private_key = env.DKIM_PRIVATE_KEY;      // PEM из секрета
           };
 
           const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {

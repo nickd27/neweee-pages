@@ -90,7 +90,7 @@ main{ padding-bottom: 120px; }
       <div class="form-grid">
         <div>
           <label for="name" id="lblName">Ваше имя *</label>
-          <input id="name" name="name" required placeholder="Peter Novak">
+          <input id="name" name="name" required placeholder="Иван Иванов">
         </div>
         <div>
           <label for="email" id="lblEmail">Email *</label>
@@ -243,6 +243,14 @@ const I18N = {
       service: 'Направление *', deadline: 'Срок / дедлайн', message: 'Краткое описание задачи *',
       choose: 'Выберите…', energy: 'Энергетический инжиниринг', fsa: 'ФСА / ТРИЗ', lab: 'Лабораторные исследования'
     },
+    ph: {
+      name: 'Иван Иванов',
+      email: 'you@company.com',
+      phone: '+420 607 828 092',
+      company: 'ООО «Компания»',
+      deadline: 'Напр., до 30.09 или 4–6 недель',
+      message: '1–2 абзаца: текущая ситуация, ограничения, желаемый результат'
+    },
     ui: { send: 'Отправить', sending: 'Отправка…', pubs: 'Публикации', copy: 'Скопировать', copied: 'Скопировано ✓' },
     msg: {
       required: 'Пожалуйста, заполните обязательные поля.',
@@ -262,6 +270,14 @@ const I18N = {
       service: 'Service *', deadline: 'Deadline', message: 'Short brief *',
       choose: 'Choose…', energy: 'Energy engineering', fsa: 'FCA / TRIZ', lab: 'Laboratory research'
     },
+    ph: {
+      name: 'John Smith',
+      email: 'you@company.com',
+      phone: '+420 607 828 092',
+      company: 'Company LLC',
+      deadline: 'e.g., by 30 Sep or 4–6 weeks',
+      message: '1–2 paragraphs: current situation, constraints, desired outcome'
+    },
     ui: { send: 'Send', sending: 'Sending…', pubs: 'Publications', copy: 'Copy', copied: 'Copied ✓' },
     msg: {
       required: 'Please fill in the required fields.',
@@ -280,6 +296,14 @@ const I18N = {
       name: 'Ваше ім’я *', email: 'Email *', phone: 'Телефон / WhatsApp', company: 'Компанія',
       service: 'Напрям *', deadline: 'Строк / дедлайн', message: 'Короткий опис задачі *',
       choose: 'Оберіть…', energy: 'Енергетичний інжиніринг', fsa: 'ФСА / TRIZ', lab: 'Лабораторні дослідження'
+    },
+    ph: {
+      name: 'Іван Іванов',
+      email: 'you@company.com',
+      phone: '+420 607 828 092',
+      company: 'ТОВ «Компанія»',
+      deadline: 'наприклад, до 30.09 або 4–6 тижнів',
+      message: '1–2 абзаци: поточна ситуація, обмеження, бажаний результат'
     },
     ui: { send: 'Надіслати', sending: 'Надсилання…', pubs: 'Публікації', copy: 'Скопіювати', copied: 'Скопійовано ✓' },
     msg: {
@@ -326,6 +350,15 @@ function applyLangUI() {
   if ($('optEnergy')) $('optEnergy').textContent = t('labels.energy');
   if ($('optFSA')) $('optFSA').textContent = t('labels.fsa');
   if ($('optLab')) $('optLab').textContent = t('labels.lab');
+
+  // Плейсхолдеры
+  const setPh = (id, key) => { const el = $(id); if (el) el.placeholder = t('ph.'+key); };
+  setPh('name', 'name');
+  setPh('email', 'email');
+  setPh('phone', 'phone');
+  setPh('company', 'company');
+  setPh('deadline', 'deadline');
+  setPh('message', 'message');
 
   // Кнопки
   const submitBtn = $('submitBtn');
@@ -397,8 +430,8 @@ f.addEventListener('submit', async (e)=>{
     const json = await res.json().catch(()=> ({}));
 
     if(res.ok && json && json.ok){
-      const m = { title: t('success.title'), text: t('success.text') };
-      f.innerHTML = `<h2>${m.title}</h2><p class="muted">${m.text}</p>`;
+      const title = t('success.title'), text = t('success.text');
+      f.innerHTML = `<h2>${title}</h2><p class="muted">${text}</p>`;
     }else{
       throw new Error(json && (json.error || json.text) || ('status '+res.status));
     }

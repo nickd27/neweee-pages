@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Контакты</title>
+
+<link rel="stylesheet" href="assets/bg.css">
+
+<style>
+:root{ --bg:#0b0f19; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:var(--text)}
+a{color:var(--accent);text-decoration:none}
+header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.06);z-index:10}
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+.nav{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
+.badge{font-size:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:999px;color:var(--text)}
+.card{background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.3);margin:18px 0}
+h1{margin:0 0 12px 0;font-size:28px}
+p.muted{color:var(--muted);margin-top:4px}
+
+/* Форма */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+@media (max-width: 820px){ .form-grid{grid-template-columns:1fr} }
+label{font-size:13px;color:var(--muted);display:block;margin:0 0 6px}
+input, select, textarea{
+  width:100%; background:rgba(255,255,255,.04); color:var(--text);
+  border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:10px 12px;
+}
+textarea{min-height:140px; resize:vertical}
+.small{font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button.btn, .btn{
+  display:inline-block;padding:10px 14px;border:1px solid rgba(255,255,255,.25);
+  border-radius:12px;color:var(--text);background:transparent;cursor:pointer
+}
+.btn:hover{border-color:rgba(255,255,255,.4)}
+
+/* honeypot (антиспам) */
+.hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+
+/* Нижняя «подушка» под sticky-footer */
+main{ padding-bottom: 120px; }
+
+/* Стрип с адресом и телефоном (внизу страницы, над футером) */
+.contact-strip{
+  margin: 12px 0 24px;
+  background: rgba(17,24,39,.82);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:16px;
+  padding:14px 16px;
+}
+.contact-strip .grid{
+  display:grid; grid-template-columns:2fr 1fr; gap:16px; align-items:flex-start;
+}
+@media (max-width: 720px){ .contact-strip .grid{grid-template-columns:1fr} }
+.contact-strip h3{margin:0 0 6px 0; font-size:16px}
+.contact-strip address{font-style:normal; color:var(--muted); line-height:1.6; margin:0}
+.contact-strip a{white-space:nowrap}
+
+/* Футер (если глобальный стиль уже есть в assets/bg.css — не мешает) */
+.site-footer{
+  position: fixed; left:0; right:0; bottom:0; text-align:center;
+  padding:12px 16px; color:#9ca3af; background: rgba(10,14,32,.55);
+  border-top:1px solid rgba(255,255,255,.08); backdrop-filter: blur(6px); z-index:100;
+}
+</style>
+</head>
+
+<script defer src="assets/i18n.js"></script>
+
+<body class="contacts">
+<header>
+  <div class="container nav">
+    <a href="index.html" class="badge">← На главную</a>
+    <span style="margin-left:4px">Контакты</span>
+  </div>
+</header>
+
+<main class="container">
+  <!-- Карточка с формой -->
+  <section class="card">
+    <h1>Связаться с нами</h1>
+    <p class="muted">Опишите задачу — мы предложим варианты решения и вернёмся с уточняющими вопросами.</p>
+
+    <form id="briefForm" action="/contact" method="post" novalidate>
+      <div class="form-grid">
+        <div>
+          <label for="name">Ваше имя *</label>
+          <input id="name" name="name" required placeholder="Peter Novak">
+        </div>
+        <div>
+          <label for="email">Email *</label>
+          <input id="email" name="email" type="email" required placeholder="you@company.com">
+        </div>
+        <div>
+          <label for="phone">Телефон / WhatsApp</label>
+          <input id="phone" name="phone" placeholder="+420 607 828 092">
+        </div>
+        <div>
+          <label for="company">Компания</label>
+          <input id="company" name="company" placeholder="ООО «Компания»">
+        </div>
+        <div>
+          <label for="service">Направление *</label>
+          <select id="service" name="service" required>
+            <option value="" selected disabled>Выберите…</option>
+            <option>Энергетический инжиниринг</option>
+            <option>ФСА / ТРИЗ</option>
+            <option>Лабораторные исследования</option>
+          </select>
+        </div>
+        <div>
+          <label for="deadline">Срок / дедлайн</label>
+          <input id="deadline" name="deadline" placeholder="Напр., до 30.09 или 4–6 недель">
+        </div>
+        <div style="grid-column:1/-1">
+          <label for="message">Краткое описание задачи *</label>
+          <textarea id="message" name="message" required placeholder="1–2 абзаца: текущая ситуация, ограничения, желаемый результат"></textarea>
+        </div>
+        <!-- honeypot -->
+        <input class="hp" type="text" id="website" name="website" tabindex="-1" autocomplete="off" placeholder="Оставьте пустым">
+      </div>
+
+      <div class="small" style="margin-top:8px">
+        Отправляя форму, вы соглашаетесь на обработку переданных данных для обратной связи.
+      </div>
+
+      <div class="actions">
+        <!-- Cloudflare Turnstile -->
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAABxW92vXuLX9EyTB"></div>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        <button type="submit" class="btn">Отправить</button>
+        <a class="btn" href="publications.html">Публикации</a>
+      </div>
+
+      <!-- Fallback, если почтовый клиент не открылся -->
+      <div id="fallback" class="card" style="margin-top:16px;display:none">
+        <p class="small">Если почтовый клиент не открылся, скопируйте текст ниже и отправьте вручную.</p>
+        <textarea id="fallbackText"></textarea>
+        <div class="actions">
+          <button type="button" class="btn" id="copyBtn">Скопировать</button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+<!-- НИЖНИЙ СТРИП: адрес компании и прямой телефон -->
+<section class="contact-strip">
+  <div class="grid">
+    <div>
+    <h3>Адрес:</h3>
+    <address>
+        NEW ENERGY AND ENGINEERING LTD<br>
+        Office No. 416, Burlington Tower, Business Bay Dubai<br>
+        P.O. Box 487644, United Arab Emirates<br>
+        ICC20211393
+      </address>
+    </div>
+    <div>
+      <h3>Телефон: ( WhatsApp, Viber )</h3>
+      <p style="margin:0"><a href="tel:+420607828092">+420 607 828 092</a></p>
+      <p><a …>office@neweee.com</a></p>
+</div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">© 2025 NEW ENERGY &amp; ENGINEERING LTD</footer>
+
+<script>
+const f = document.getElementById('briefForm');
+const fb = document.getElementById('fallback');
+const fbText = document.getElementById('fallbackText');
+const copyBtn = document.getElementById('copyBtn');
+
+function val(id){ return (document.getElementById(id)?.value || "").trim(); }
+function isSpam(){ return (document.getElementById('website')?.value || "").trim().length > 0; }
+
+f.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(isSpam()) return;
+
+  const required = ['name','email','service','message'];
+  for(const id of required){
+    if(!val(id)){ alert('Пожалуйста, заполните обязательные поля.'); return; }
+  }
+
+  const payload = {
+    name: val('name'),
+    email: val('email'),
+    phone: val('phone'),
+    company: val('company'),
+    service: val('service'),
+    deadline: val('deadline'),
+    message: val('message'),
+    turnstileToken: document.querySelector('input[name="cf-turnstile-response"]')?.value || ''
+  };
+
+  const submitBtn = f.querySelector('button[type="submit"]');
+  if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Отправка…'; }
+
+  try{
+    const res = await fetch('/contact', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json().catch(()=>({}));
+
+    if(res.ok && json.ok){
+      f.innerHTML = '<h2>Спасибо!</h2><p class="muted">Мы получили вашу заявку и свяжемся с вами в ближайшее время.</p>';
+    }else{
+      throw new Error(json.error || 'Не удалось отправить форму');
+    }
+  }catch(err){
+    // Показать fallback
+    const lines = [
+      `Имя: ${payload.name}`,
+      `Email: ${payload.email}`,
+      payload.phone ? `Телефон: ${payload.phone}` : null,
+      payload.company ? `Компания: ${payload.company}` : null,
+      `Направление: ${payload.service}`,
+      payload.deadline ? `Срок: ${payload.deadline}` : null,
+      '',
+      'Задача:',
+      payload.message
+    ].filter(Boolean);
+    fbText.value = lines.join('\r\n');
+    fb.style.display = 'block';
+    alert('Не удалось отправить автоматически. Можно скопировать текст и отправить вручную.');
+    if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Отправить'; }
+  }
+});
+
+copyBtn?.addEventListener('click', async () => {
+  try{
+    await navigator.clipboard.writeText(fbText.value);
+    copyBtn.textContent = 'Скопировано ✓';
+    setTimeout(()=> copyBtn.textContent = 'Скопировать', 1500);
+  }catch(e){
+    fbText.select(); document.execCommand('copy');
+  }
+});
+</script>
+</body>
+</html>

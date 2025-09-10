@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Направления</title>
+
+<link rel="stylesheet" href="assets/bg.css">
+
+<style>
+:root{ --bg:#0b0f19; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:var(--text)}
+a{color:var(--accent);text-decoration:none}
+header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.06);z-index:10}
+.container{max-width:1200px;margin:0 auto;padding:0 16px}
+.nav{display:flex;align-items:center;gap:12px;padding:12px 0}
+.badge{font-size:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:999px;color:var(--text)}
+.card{background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.3);margin:18px 0}
+h1{margin:0 0 12px 0;font-size:30px}
+p.muted{color:var(--muted);margin-top:4px}
+
+/* Крупнее карточки направлений */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media (max-width: 1100px){ .grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width: 700px){ .grid{grid-template-columns:1fr} }
+.item{
+  background:rgba(17,24,39,.85);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  min-height: 420px; /* было меньше — увеличили */
+  box-shadow:0 10px 36px rgba(0,0,0,.35);
+}
+.thumb{
+  position:relative;height: 200px; /* большая «шапка» с картинкой */
+  background:#0b0f19 center/cover no-repeat;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.thumb::after{ /* лёгкое затемнение над фото для контраста текста */
+  content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.35));
+}
+.item .inner{padding:16px 16px 18px}
+.item h3{margin:0 0 8px 0;font-size:20px}
+.btn{display:inline-block;padding:10px 14px;border:1px solid rgba(255,255,255,.25);border-radius:12px;color:var(--text)}
+.btn:hover{border-color:rgba(255,255,255,.4)}
+</style>
+</head>
+
+<script defer src="assets/i18n.js"></script>
+
+<body class="services">
+<header>
+  <div class="container nav">
+    <a href="index.html" class="badge">← На главную</a>
+    <span style="margin-left:4px">Направления</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h1>Наши компетенции и направления</h1>
+    <p class="muted">Мы — команда инженеров и исследователей, специализирующаяся на инженерном консалтинге в энергетических проектах (ТЭС), решении сложных производственно-промышленных задач методами ФСА и ТРИЗ, а также лабораторных исследованиях различных полей и испытаниях прототипов. Мы честно говорим о сроках и рисках, работаем короткими итерациями и фокусируемся на измеримом результате.</p>
+    </section>
+
+  <section class="grid cols-3">
+
+    <article class="item">
+      <div class="thumb" style="background-image:url('assets/images/cards/energy-card.jpg')"></div>
+      <div class="inner">
+        <h3><a href="energy.html">Энергетический инжиниринг</a></h3>
+        <p class="muted">Инжиниринг и консалтинг. Технические решения для энергетических объектов: основное оборудование, тепловые схемы, ТЭО и проектирование, повышение энергоэффективности.</p>
+        <p><a class="btn" href="energy.html">Подробнее →</a></p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="thumb" style="background-image:url('assets/images/cards/fsa-triz-card.jpg')"></div>
+      <div class="inner">
+        <h3><a href="fsa-triz.html">ФСА / ТРИЗ</a></h3>
+        <p class="muted">Функционально-стоимостной анализ и методология ТРИЗ: снижение себестоимости, устранение противоречий, портфель практичных решений.</p>
+        <p><a class="btn" href="fsa-triz.html">Подробнее →</a></p>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="thumb" style="background-image:url('assets/images/cards/lab-card.jpg')"></div>
+      <div class="inner">
+        <h3><a href="lab.html">Лабораторные исследования</a></h3>
+        <p class="muted">Экспериментальная отработка идей и прототипов: стендовые испытания, измерения, документирование результатов.</p>
+        <p><a class="btn" href="lab.html">Подробнее →</a></p>
+      </div>
+    </article>
+
+  </section>
+</main>
+
+<footer class="site-footer">© 2025 NEW ENERGY &amp; ENGINEERING LTD</footer>
+<script defer src="assets/i18n.js?v=16"></script>
+</body>
+</html>

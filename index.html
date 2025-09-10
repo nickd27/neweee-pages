@@ -1,25 +1,287 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>neweee — минимальный шаблон (_worker.js)</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
-    code { background: #f4f4f4; padding: .1rem .3rem; border-radius: .25rem; }
-    a.button { display:inline-block; padding:.6rem 1rem; border:1px solid #ccc; border-radius:.5rem; text-decoration:none; }
-  </style>
-</head>
-<body>
-  <h1>neweee — минимальный шаблон (_worker.js)</h1>
-  <p>Этот вариант использует <code>_worker.js</code> вместо папки <code>/functions</code>.</p>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEW ENERGY & ENGINEERING</title>
 
-  <h2>Проверки</h2>
-  <ol>
-    <li>Открой <a href="/env-check" class="button">/env-check</a> — должен вернуться JSON.</li>
-    <li>Попробуй форму на странице <a href="/contact.html" class="button">Контакты</a>.</li>
-  </ol>
+<link rel="stylesheet" href="assets/bg.css">
+
+<style>
+:root{ --bg:#0b0f19; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:var(--text)}
+a{color:var(--accent);text-decoration:none}
+header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.06);z-index:10}
+.container{max-width:1200px;margin:0 auto;padding:0 16px}
+.nav{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
+.badge{font-size:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:999px;color:var(--text)}
+
+/* ==== HERO (два столбца) ==== */
+.hero{
+  display:grid;grid-template-columns:1.15fr .85fr;gap:22px;
+  background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.07);
+  border-radius:18px;padding:28px;margin:18px 0;box-shadow:0 8px 30px rgba(0,0,0,.3)
+}
+@media (max-width: 900px){ .hero{grid-template-columns:1fr} }
+.hero h1{margin:0 0 8px 0;font-size:34px}
+.hero p.lead{color:var(--muted);margin:6px 0 14px 0;line-height:1.6}
+.hero .chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}
+.chip{font-size:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.22);border-radius:999px;color:var(--text);opacity:.9}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn{display:inline-block;padding:10px 14px;border:1px solid rgba(255,255,255,.25);border-radius:12px;color:var(--text)}
+.btn:hover{border-color:rgba(255,255,255,.4)}
+
+/* Медиа-коллаж справа */
+.media{
+  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:160px 160px;gap:10px;
+}
+@media (max-width: 900px){ .media{grid-template-columns:1fr 1fr;grid-template-rows:140px 140px} }
+.tile{
+  position:relative;border-radius:14px;overflow:hidden;
+  background:#0b0f19 center/cover no-repeat;border:1px solid rgba(255,255,255,.06)
+}
+.tile.big{grid-column:1/3;height:200px}
+.tile::after{
+  content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.35));
+}
+
+/* ==== Ярлыки направлений (тонкие горизонтальные карточки) ==== */
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0}
+@media (max-width: 1000px){ .quick{grid-template-columns:repeat(2,1fr)} }
+@media (max-width: 640px){ .quick{grid-template-columns:1fr} }
+.qitem{
+  display:flex;gap:14px;align-items:center;
+  background:rgba(17,24,39,.78);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;padding:12px 14px;min-height:86px
+}
+.qthumb{width:86px;height:62px;border-radius:10px;flex:0 0 auto;
+  background:#0b0f19 center/cover no-repeat;border:1px solid rgba(255,255,255,.06)}
+.qitem h3{margin:0;font-size:16px}
+.qitem p{margin:3px 0 0 0;color:var(--muted);font-size:13px}
+
+/* ==== Тизер публикаций ==== */
+.pub{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:8px 0 18px}
+@media (max-width: 900px){ .pub{grid-template-columns:1fr} }
+.pub .item{
+  background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.07);
+  border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px
+}
+.pub .item h4{margin:0 0 4px 0;font-size:16px}
+.pub .item p{margin:0;color:var(--muted);font-size:13px}
+
+/* ==== Финальный CTA ==== */
+.cta-panel{
+  margin:18px 0;background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.07);
+  border-radius:18px;padding:22px;text-align:center
+}
+.cta-panel h3{margin:0 0 8px 0}
+.cta-panel p{color:var(--muted);margin:0 0 12px 0}
+
+/* Футер (если глобальный стиль уже в assets/bg.css — всё равно ок) */
+.site-footer{
+  margin:24px auto 0; padding:14px 16px; text-align:center;
+  color:#9ca3af; background: rgba(10,14,32,.55);
+  border-top:1px solid rgba(255,255,255,.08); border-radius:14px;
+}
+
+/* ==== FIX: размер процесс‑графа на мобилке ==== */
+.flow{ margin:10px 0 }
+.flow svg{ display:block; width:100%; height:auto }
+
+/* по умолчанию показываем горизонтальную версию */
+.flow-h{ display:block }
+.flow-v{ display:none }
+.flow .lbl{ fill:#e5e7eb; font-size:14px; font-weight:500 }
+
+/* мобильная версия: прячем горизонтальный граф и ограничиваем размеры вертикального */
+@media (max-width:640px){
+  .flow-h{ display:none }
+  .flow-v{
+    display:block;
+    width:100%;
+    max-width:220px;
+    margin:0 auto;
+  }
+  .flow .lbl{ font-size:12px }
+}
+</style>
+</head>
+
+<script defer src="assets/i18n.js"></script>
+
+<body class="index">
+<header>
+  <div class="container nav">
+    <a href="index.html" class="badge">NE&E</a>
+    <a href="services.html" class="badge">Компетенции</a>
+    <a href="publications.html" class="badge">Публикации</a>
+    <a href="contacts.html" class="badge">Контакты</a>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- HERO: текст слева, коллаж справа -->
+  <section class="hero">
+    <div>
+      <h1>NEW ENERGY & ENGINEERING</h1>
+      <p class="lead">Инжиниринговые услуги в энергетике - от разработки ТЭО проекта до ввода энергоблока в эксплуатацию. Промышленный инжиниринг - от выполнения ФСА/ТРИЗ и проектирования до лабораторной отработки и внедрения решений.</p>
+     
+     <!-- Граф процесса (адаптивный SVG) -->
+<figure class="flow" role="img" aria-label="Этапы процесса: Диагностика → Концепт → Проект → Испытания → Внедрение">
+  <!-- Горизонтальная версия (десктоп) -->
+  <svg class="flow-h" viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="nodeGradH" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"  stop-color="#1e3a8a"/>
+        <stop offset="100%" stop-color="#0ea5e9"/>
+      </linearGradient>
+      <marker id="arrowH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#9fb3c8"/>
+      </marker>
+    </defs>
+
+    <!-- соединительные линии -->
+    <g stroke="#9fb3c8" stroke-width="1.8" fill="none" marker-end="url(#arrowH)" opacity="0.9">
+      <line x1="120" y1="70" x2="300" y2="70"/>
+      <line x1="300" y1="70" x2="480" y2="70"/>
+      <line x1="480" y1="70" x2="660" y2="70"/>
+      <line x1="660" y1="70" x2="840" y2="70"/>
+    </g>
+
+    <!-- узлы -->
+    <g>
+      <circle cx="120" cy="70" r="24" fill="url(#nodeGradH)" stroke="rgba(255,255,255,.25)" />
+      <text x="120" y="120" text-anchor="middle" class="lbl">Диагностика</text>
+
+      <circle cx="300" cy="70" r="24" fill="url(#nodeGradH)" stroke="rgba(255,255,255,.25)" />
+      <text x="300" y="120" text-anchor="middle" class="lbl">Концепт</text>
+
+      <circle cx="480" cy="70" r="24" fill="url(#nodeGradH)" stroke="rgba(255,255,255,.25)" />
+      <text x="480" y="120" text-anchor="middle" class="lbl">Проект</text>
+
+      <circle cx="660" cy="70" r="24" fill="url(#nodeGradH)" stroke="rgba(255,255,255,.25)" />
+      <text x="660" y="120" text-anchor="middle" class="lbl">Испытания</text>
+
+      <circle cx="840" cy="70" r="24" fill="url(#nodeGradH)" stroke="rgba(255,255,255,.25)" />
+      <text x="840" y="120" text-anchor="middle" class="lbl">Внедрение</text>
+    </g>
+  </svg>
+
+  <!-- Вертикальная версия (мобилка) -->
+  <svg class="flow-v" viewBox="0 0 260 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="nodeGradV" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"  stop-color="#1e3a8a"/>
+        <stop offset="100%" stop-color="#0ea5e9"/>
+      </linearGradient>
+      <marker id="arrowV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#9fb3c8"/>
+      </marker>
+    </defs>
+
+    <!-- вертикальные линии -->
+    <g stroke="#9fb3c8" stroke-width="1.8" fill="none" marker-end="url(#arrowV)" opacity="0.9">
+      <line x1="60" y1="60"  x2="60" y2="150"/>
+      <line x1="60" y1="150" x2="60" y2="240"/>
+      <line x1="60" y1="240" x2="60" y2="330"/>
+      <line x1="60" y1="330" x2="60" y2="420"/>
+    </g>
+
+    <!-- узлы + подписи справа -->
+    <g>
+      <circle cx="60" cy="60"  r="22" fill="url(#nodeGradV)" stroke="rgba(255,255,255,.25)" />
+      <text x="100" y="66" class="lbl">Диагностика</text>
+
+      <circle cx="60" cy="150" r="22" fill="url(#nodeGradV)" stroke="rgba(255,255,255,.25)" />
+      <text x="100" y="156" class="lbl">Концепт</text>
+
+      <circle cx="60" cy="240" r="22" fill="url(#nodeGradV)" stroke="rgba(255,255,255,.25)" />
+      <text x="100" y="246" class="lbl">Проект</text>
+
+      <circle cx="60" cy="330" r="22" fill="url(#nodeGradV)" stroke="rgba(255,255,255,.25)" />
+      <text x="100" y="336" class="lbl">Испытания</text>
+
+      <circle cx="60" cy="420" r="22" fill="url(#nodeGradV)" stroke="rgba(255,255,255,.25)" />
+      <text x="100" y="426" class="lbl">Внедрение</text>
+    </g>
+  </svg>
+
+ 
+
+<!-- Кнопка смотри направления (оставляем одну, спокойную) -->
+<div class="cta" style="margin-top:8px">
+ 
+</div>
+   
+<div class="cta">
+        <a class="btn" href="services.html">Смотреть компетенции →</a>
+      </div>
+    </div>
+
+   
+      <div class="media">
+      <div class="tile big" style="background-image:url('assets/images/cards/energy-card.jpg')"></div>
+      <div class="tile"     style="background-image:url('assets/images/cards/fsa-triz-card.jpg')"></div>
+      <div class="tile"     style="background-image:url('assets/images/cards/lab-card.jpg')"></div>
+    </div>
+  </section>
+
+  <!-- Три тонкие карточки-ярлыка (не как на странице "Направления") -->
+  <section class="quick">
+    <a class="qitem" href="energy.html">
+      <div class="qthumb" style="background-image:url('assets/images/cards/energy-card.jpg')"></div>
+      <div>
+        <h3>Энергетический инжиниринг</h3>
+        <p>Разработка проекта энергоблока, выбор оборудования, энергоэффективность и долговечность</p>
+      </div>
+    </a>
+
+    <a class="qitem" href="fsa-triz.html">
+      <div class="qthumb" style="background-image:url('assets/images/cards/fsa-triz-card.jpg')"></div>
+      <div>
+        <h3>ФСА / ТРИЗ</h3>
+        <p>Анализ и решение сложных производственных задач, снижение себестоимости и устранение противоречий.</p>
+      </div>
+    </a>
+
+    <a class="qitem" href="lab.html">
+      <div class="qthumb" style="background-image:url('assets/images/cards/lab-card.jpg')"></div>
+      <div>
+        <h3>Лабораторные исследования</h3>
+        <p>Изучение взаимодействия полей, разработка лабораторных образцов, стендовые испытания.</p>
+      </div>
+    </a>
+  </section>
+
+  <!-- Тизер публикаций -->
+  <section class="pub">
+    <div class="item">
+      <h4>Практика применения ФСА на примере вентиляторной градирни</h4>
+      <p>Этапы ФСА, зона излишних затрат, эффективные решения, новые направления развития.</p>
+      <div class="cta" style="margin-top:6px">
+        <a class="btn" href="publications/practice_FSA.pdf" target="_blank">Читать PDF</a>
+      </div>
+    </div>
+    <div class="item">
+      <h4>Испарительные градирни в энергетике: проблемы и решения</h4>
+      <p>Гидравлика, теплообмен, материалы, модернизация и новые решения.</p>
+      <div class="cta" style="margin-top:6px">
+        <a class="btn" href="publications/evaporative_cooling_towers_energetics.pdf" target="_blank">Читать PDF</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Финальный вызов к действию -->
+<section class="cta-panel">
+  <h3>Обсудим ваш проект?</h3>
+  <p class="muted">Рассмотрим задачу и предложим варианты решения.</p>
+  <div class="cta" style="justify-content:center">
+    <a class="btn" href="contacts.html">Перейти в «Контакты» →</a>
+  </div>
+</section>
+
+  <footer class="site-footer">© 2025 NEW ENERGY &amp; ENGINEERING LTD</footer>
+<script defer src="assets/i18n.js?v=16"></script>
 </body>
 </html>
-<!-- redeploy -->
-

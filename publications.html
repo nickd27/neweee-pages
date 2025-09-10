@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Публикации и статьи</title>
+
+<!-- Полноэкранные фоны -->
+<link rel="stylesheet" href="assets/bg.css">
+
+<!-- Базовые стили страницы (минимум, чтобы выглядело как на остальных разделах) -->
+<style>
+:root{ --bg:#0b0f19; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:var(--text)}
+a{color:var(--accent);text-decoration:none}
+header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.06);z-index:10}
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+.nav{display:flex;align-items:center;gap:12px;padding:12px 0}
+.badge{font-size:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:999px;color:var(--text)}
+.card{background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.3);margin:18px 0}
+h1{margin:0 0 12px 0;font-size:28px}
+h2{margin:22px 0 10px 0;font-size:20px}
+p.muted{color:var(--muted);margin-top:4px}
+
+/* Сетка карточек */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+.item{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px}
+.item h3{margin:0 0 8px 0;font-size:18px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.btn{display:inline-block;padding:8px 12px;border:1px solid rgba(255,255,255,.2);border-radius:10px;color:var(--text)}
+.btn:hover{border-color:rgba(255,255,255,.35)}
+
+/* безопасный отступ для нижних кнопок */
+body.publications main{padding-bottom:140px}
+</style>
+</head>
+
+<body class="publications">
+<header>
+  <div class="container nav">
+    <a href="index.html" class="badge">← На главную</a>
+    <span style="margin-left:4px">Публикации и статьи</span>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="card">
+    <h1>Публикации и статьи</h1>
+    <p class="muted">Здесь собраны наши материалы: технические публикации (PDF) и авторские статьи и книги.</p>
+  </section>
+
+  <!-- Две карточки из блога, каждая ведёт на PDF -->
+  <section class="grid">
+
+    <!-- Карточка 1 -->
+    <article class="item">
+      <h3>«Практика применения ФСА на примере конструкции вентиляторной градирни»</h3>
+      <p class="muted">Кейс-описание этапов ФСА на конкретном объекте: Выявление функций, моделирование системы, выявление зон затрат, анализ технических противоречий и портфель решений для снижения стоимости и повышения эффективности.</p>
+      <div class="actions">
+        <a class="btn" href="publications/practice_FSA.pdf" target="_blank">Читать статью (PDF)</a>
+        <a class="btn" href="publications/practice_FSA.pdf" download>Скачать PDF</a>
+      </div>
+    </article>
+
+    <!-- Карточка 2 -->
+    <article class="item">
+      <h3>«Испарительные градирни в энергетике. Актуальные проблемы и возможные решения»</h3>
+      <p class="muted">Обзор проблем эксплуатации испарительных градирен и подходов к их решению: гидравлика, теплообмен, материалы, модернизация и влияние на CAPEX/OPEX энергоплощадок.</p>
+      <div class="actions">
+        <a class="btn" href="publications/evaporative_cooling_towers_energetics.pdf" target="_blank">Читать статью (PDF)</a>
+        <a class="btn" href="publications/evaporative_cooling_towers_energetics.pdf" download>Скачать PDF</a>
+      </div>
+    </article>
+    <!-- Карточка 3 -->
+    <article class="item">
+      <h3>«Основы технологии системного мышления»</h3>
+      <p class="muted">Книга о структуре, основе, методах и практиках использования системного мышления для решения сложных задач. Глубокая и развернутая работа Евгения Голибардова — авторитетного специалиста ФСА и ТРИЗ, автора многих книг и публикаций, заслуженного деятеля культуры Польши.</p>
+      <div class="actions">
+        <a class="btn" href="publications/systemic_thinking_basics_golibardov.pdf" target="_blank">Читать статью (PDF)</a>
+        <a class="btn" href="publications/systemic_thinking_basics_golibardov.pdf" download>Скачать PDF</a>
+      </div>
+    </article>
+
+</section>
+
+  <!-- При желании можно добавить другие материалы позже -->
+  <!-- <section class="card"><h2>Другие публикации</h2> … </section> -->
+
+</main>
+<footer class="site-footer">© 2025 NEW ENERGY &amp; ENGINEERING LTD</footer>
+<script defer src="assets/i18n.js?v=16"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  try{ if (typeof mountSwitcher==='function') mountSwitcher(); }catch(e){}
+  try{ if (typeof applyCurrent==='function') applyCurrent(localStorage.getItem('lang')||'ru'); }catch(e){}
+});
+</script>
+</body>
+</html>

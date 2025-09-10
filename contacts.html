@@ -58,13 +58,16 @@ main{ padding-bottom: 120px; }
 .contact-strip address{font-style:normal; color:var(--muted); line-height:1.6; margin:0}
 .contact-strip a{white-space:nowrap}
 
-/* Футер (если глобальный стиль уже есть в assets/bg.css — не мешает) */
+/* Футер */
 .site-footer{
   position: fixed; left:0; right:0; bottom:0; text-align:center;
   padding:12px 16px; color:#9ca3af; background: rgba(10,14,32,.55);
   border-top:1px solid rgba(255,255,255,.08); backdrop-filter: blur(6px); z-index:100;
 }
 </style>
+
+<!-- Turnstile explicit -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=tsReady&render=explicit" async defer></script>
 </head>
 
 <script defer src="assets/i18n.js"></script>
@@ -81,7 +84,7 @@ main{ padding-bottom: 120px; }
   <!-- Карточка с формой -->
   <section class="card">
     <h1>Связаться с нами</h1>
-    <p class="muted">Опишите задачу — мы предложим варианты решения и вернёмся с уточняющими вопросами.</p>
+    <p class="muted">Опишите задачу — мы предложим варианты решения и свяжемся с вами.</p>
 
     <form id="briefForm" action="/contact" method="post" novalidate>
       <div class="form-grid">
@@ -118,25 +121,22 @@ main{ padding-bottom: 120px; }
           <label for="message">Краткое описание задачи *</label>
           <textarea id="message" name="message" required placeholder="1–2 абзаца: текущая ситуация, ограничения, желаемый результат"></textarea>
         </div>
+
         <!-- honeypot -->
         <input class="hp" type="text" id="website" name="website" tabindex="-1" autocomplete="off" placeholder="Оставьте пустым">
       </div>
 
-      <div class="small" style="margin-top:8px">
-        Отправляя форму, вы соглашаетесь на обработку переданных данных для обратной связи.
-      </div>
-
+      <!-- Turnstile -->
+      <input type="hidden" name="cf-turnstile-response" id="ts-response">
       <div class="actions">
-        <!-- Cloudflare Turnstile -->
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAABxW92vXuLX9EyTB"></div>
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-        <button type="submit" class="btn">Отправить</button>
+        <div id="ts-container"></div>
+        <button type="submit" class="btn" id="submitBtn" disabled>Отправить</button>
         <a class="btn" href="publications.html">Публикации</a>
       </div>
 
-      <!-- Fallback, если почтовый клиент не открылся -->
+      <!-- Fallback, если автоматическая отправка не удалась -->
       <div id="fallback" class="card" style="margin-top:16px;display:none">
-        <p class="small">Если почтовый клиент не открылся, скопируйте текст ниже и отправьте вручную.</p>
+        <p class="small">Если автоматическая отправка не прошла, скопируйте текст ниже и отправьте вручную на <a href="mailto:office@neweee.com">office@neweee.com</a>.</p>
         <textarea id="fallbackText"></textarea>
         <div class="actions">
           <button type="button" class="btn" id="copyBtn">Скопировать</button>
@@ -145,31 +145,70 @@ main{ padding-bottom: 120px; }
     </form>
   </section>
 
-<!-- НИЖНИЙ СТРИП: адрес компании и прямой телефон -->
-<section class="contact-strip">
-  <div class="grid">
-    <div>
-    <h3>Адрес:</h3>
-    <address>
-        NEW ENERGY AND ENGINEERING LTD<br>
-        Office No. 416, Burlington Tower, Business Bay Dubai<br>
-        P.O. Box 487644, United Arab Emirates<br>
-        ICC20211393
-      </address>
+  <!-- НИЖНИЙ СТРИП: адрес компании и прямой телефон -->
+  <section class="contact-strip">
+    <div class="grid">
+      <div>
+        <h3>Адрес:</h3>
+        <address>
+          NEW ENERGY AND ENGINEERING LTD<br>
+          Office No. 416, Burlington Tower, Business Bay Dubai<br>
+          P.O. Box 487644, United Arab Emirates<br>
+          ICC20211393
+        </address>
+      </div>
+      <div>
+        <h3>Телефон: ( WhatsApp, Viber )</h3>
+        <p style="margin:0"><a href="tel:+420607828092">+420 607 828 092</a></p>
+        <p><a href="mailto:office@neweee.com">office@neweee.com</a></p>
+      </div>
     </div>
-    <div>
-      <h3>Телефон: ( WhatsApp, Viber )</h3>
-      <p style="margin:0"><a href="tel:+420607828092">+420 607 828 092</a></p>
-      <p><a …>office@neweee.com</a></p>
-</div>
-  </div>
-</section>
-
+  </section>
 </main>
 
 <footer class="site-footer">© 2025 NEW ENERGY &amp; ENGINEERING LTD</footer>
 
 <script>
+// ===== Turnstile (explicit) — ключи как в вашей новой версии =====
+const SITEKEY_PAGES = '0x4AAAAAABzuSh1PhYJkUsxg'; // allowlist: neweee-pages.pages.dev
+const SITEKEY_PROD  = '0x4AAAAAABzukrBYa83MJypa';  // allowlist: ne​weee.com, www.ne​weee.com
+
+function pickSiteKey() {
+  const h = location.hostname;
+  if (h.endsWith('neweee-pages.pages.dev')) return SITEKEY_PAGES;
+  if (h === 'neweee.com' || h === 'www.neweee.com') return SITEKEY_PROD;
+  return SITEKEY_PAGES;
+}
+const SITE_KEY = pickSiteKey();
+
+let widgetId = null;
+function enableSubmit(on){ document.getElementById('submitBtn').disabled = !on; }
+
+function tsReady(){
+  try{
+    widgetId = turnstile.render('#ts-container', {
+      sitekey: SITE_KEY,
+      retry: 'never',
+      callback: (token)=>{
+        document.getElementById('ts-response').value = token || '';
+        enableSubmit(!!token);
+      },
+      'expired-callback': ()=>{
+        document.getElementById('ts-response').value = '';
+        enableSubmit(false);
+      },
+      'error-callback': ()=>{
+        document.getElementById('ts-response').value = '';
+        enableSubmit(false);
+      }
+    });
+  }catch(e){
+    enableSubmit(false);
+  }
+}
+window.tsReady = tsReady;
+
+// ===== Отправка формы: x-www-form-urlencoded на /contact =====
 const f = document.getElementById('briefForm');
 const fb = document.getElementById('fallback');
 const fbText = document.getElementById('fallbackText');
@@ -187,50 +226,50 @@ f.addEventListener('submit', async (e)=>{
     if(!val(id)){ alert('Пожалуйста, заполните обязательные поля.'); return; }
   }
 
-  const payload = {
-    name: val('name'),
-    email: val('email'),
-    phone: val('phone'),
-    company: val('company'),
-    service: val('service'),
-    deadline: val('deadline'),
-    message: val('message'),
-    turnstileToken: document.querySelector('input[name="cf-turnstile-response"]')?.value || ''
-  };
-
-  const submitBtn = f.querySelector('button[type="submit"]');
-  if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Отправка…'; }
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true; submitBtn.textContent = 'Отправка…';
 
   try{
-    const res = await fetch('/contact', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json().catch(()=>({}));
+    const fd = new FormData(f);
+    // гарантируем наличие токена
+    const tok = document.getElementById('ts-response').value || '';
+    if(!tok){ alert('Подтвердите проверку «Я не робот».'); throw new Error('no token'); }
+    fd.set('cf-turnstile-response', tok);
 
-    if(res.ok && json.ok){
+    const params = new URLSearchParams();
+    for (const [k,v] of fd.entries()) params.append(k, String(v));
+
+    const res = await fetch(f.action, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: params
+    });
+    const json = await res.json().catch(()=> ({}));
+
+    if(res.ok && json && json.ok){
       f.innerHTML = '<h2>Спасибо!</h2><p class="muted">Мы получили вашу заявку и свяжемся с вами в ближайшее время.</p>';
     }else{
-      throw new Error(json.error || 'Не удалось отправить форму');
+      throw new Error(json && (json.error || json.text) || ('status '+res.status));
     }
   }catch(err){
-    // Показать fallback
+    // Fallback — собрать письмо
     const lines = [
-      `Имя: ${payload.name}`,
-      `Email: ${payload.email}`,
-      payload.phone ? `Телефон: ${payload.phone}` : null,
-      payload.company ? `Компания: ${payload.company}` : null,
-      `Направление: ${payload.service}`,
-      payload.deadline ? `Срок: ${payload.deadline}` : null,
+      `Имя: ${val('name')}`,
+      `Email: ${val('email')}`,
+      val('phone') ? `Телефон: ${val('phone')}` : null,
+      val('company') ? `Компания: ${val('company')}` : null,
+      `Направление: ${val('service')}`,
+      val('deadline') ? `Срок: ${val('deadline')}` : null,
       '',
       'Задача:',
-      payload.message
+      val('message')
     ].filter(Boolean);
     fbText.value = lines.join('\r\n');
     fb.style.display = 'block';
     alert('Не удалось отправить автоматически. Можно скопировать текст и отправить вручную.');
-    if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Отправить'; }
+  }finally{
+    if(window.turnstile && widgetId!==null) turnstile.reset(widgetId);
+    submitBtn.disabled = true; submitBtn.textContent = 'Отправить';
   }
 });
 

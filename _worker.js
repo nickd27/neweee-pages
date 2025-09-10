@@ -15,7 +15,7 @@ export default {
           SEND_DOMAIN: env.SEND_DOMAIN || null,
           // DKIM диагностика
           has_DKIM_SELECTOR: !!env.DKIM_SELECTOR,
-          has_DKIM_PRIVATE_KEY: !!env.DKIM_PRIVATE_KEY,
+          has_DKIM_PRIVATE_KEY: !!env.DKIM_PRIVATE_KEY, // ожидается base64 ОДНОЙ строкой
           dkim_domain_effective: (env.DKIM_DOMAIN || env.SEND_DOMAIN || null)
         }), { headers: { "content-type": "application/json; charset=utf-8" }});
       }
@@ -23,7 +23,7 @@ export default {
       // ---- POST /contact
       if (url.pathname === "/contact" && request.method === "POST") {
         try {
-          // ---- прочитаем форму
+          // ---- читаем форму
           const ct = request.headers.get("content-type") || "";
           let name="", email="", message="", token="";
           if (ct.includes("application/x-www-form-urlencoded")) {
@@ -43,14 +43,14 @@ export default {
 
           if (!token) return json(400, { ok:false, error:"turnstile_token_missing" });
 
-          // ---- выберем секрет Turnstile по хосту
+          // ---- секрет Turnstile по хосту
           const host = url.hostname;
           const secret =
             host.endsWith("neweee-pages.pages.dev") ? (env.TURNSTILE_SECRET_PAGES || env.TURNSTILE_SECRET)
           : (host === "neweee.com" || host === "www.neweee.com") ? (env.TURNSTILE_SECRET_PROD || env.TURNSTILE_SECRET)
           : (env.TURNSTILE_SECRET || "");
 
-          // ---- проверим Turnstile
+          // ---- verify Turnstile
           const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
             method: "POST",
             headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -61,7 +61,7 @@ export default {
             return json(400, { ok:false, error:"turnstile_failed", details: verifyData["error-codes"] });
           }
 
-          // ---- отправка письма
+          // ---- отправляем письмо
           return await sendMail(env, { name, email, message });
 
         } catch (e) {
@@ -94,33 +94,38 @@ async function sendMail(env, { name, email, message }) {
     return json(500, { ok:false, error:"missing_MC_API_KEY" });
   }
 
-  // базовый объект письма
+  // ---- DKIM параметры (ВАЖНО: ключ — ОДНОЙ строкой base64 DER)
+  const dkimDomain   = env.DKIM_DOMAIN || SEND_DOMAIN;   // d=
+  const dkimSelector = env.DKIM_SELECTOR || "";          // s=
+  const dkimKeyB64   = env.DKIM_PRIVATE_KEY || "";       // base64 (без BEGIN/END)
+
+  // ---- тело письма
+  const personalizations = [{
+    to: [{ email: SEND_TO }],
+    // DKIM — строго внутри personalizations[0]
+    ...(dkimKeyB64 && dkimSelector && dkimDomain ? {
+      dkim_domain: dkimDomain,
+      dkim_selector: dkimSelector,
+      dkim_private_key: dkimKeyB64
+    } : {})
+  }];
+
   const mail = {
-    personalizations: [{ to: [{ email: SEND_TO }] }],
+    personalizations,
     from: { email: `noreply@${SEND_DOMAIN}`, name: FROM_NAME },
     reply_to: REPLY_TO ? { email: REPLY_TO } : undefined,
     subject: `Сообщение с сайта: ${name || "без имени"}`,
     content: [{ type: "text/plain", value: `От: ${name}\nEmail: ${email}\n\n${message}` }],
   };
 
-  // ---- DKIM: включаем, если заданы секреты
-  const dkimDomain = env.DKIM_DOMAIN || SEND_DOMAIN;   // d= должен соответствовать домену From
-  const dkimSelector = env.DKIM_SELECTOR || "";        // s=
-  const dkimKey = env.DKIM_PRIVATE_KEY || "";          // PEM (BEGIN ... END ...), многострочный
+  // лог: включён ли DKIM (без утечки ключа)
+  console.log("DKIM:", {
+    enabled: !!(dkimKeyB64 && dkimSelector && dkimDomain),
+    d: dkimDomain, s: dkimSelector,
+    keyLen: dkimKeyB64 ? dkimKeyB64.length : 0
+  });
 
-  if (dkimKey && dkimSelector && dkimDomain) {
-    mail.dkim_domain = dkimDomain;
-    mail.dkim_selector = dkimSelector;
-    mail.dkim_private_key = dkimKey;
-    // короткая диагностика в логе (без утечки ключа)
-    console.log("DKIM enabled:", { d: dkimDomain, s: dkimSelector, keyHead: dkimKey.slice(0, 30) + "..." });
-  } else {
-    console.log("DKIM disabled:", {
-      hasKey: !!dkimKey, hasSelector: !!dkimSelector, d: dkimDomain
-    });
-  }
-
-  // ---- вызов MailChannels Email API
+  // ---- вызов MailChannels
   const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {
     method: "POST",
     headers: {
@@ -131,13 +136,11 @@ async function sendMail(env, { name, email, message }) {
   });
 
   const text = await mcRes.text();
-  // Немного полезной диагностики в лог
   console.log("MailChannels:", mcRes.status, (text || "").slice(0, 200));
 
   if (!mcRes.ok) {
     return json(mcRes.status, { ok:false, error:"mailchannels_failed", status: mcRes.status, text });
   }
-  // Можно вернуть трейсы провайдера (на время диагностики)
   const mcStatus = mcRes.status;
   const mcTrace = mcRes.headers.get("X-Message-Id") || mcRes.headers.get("x-request-id") || null;
 

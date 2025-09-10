@@ -84,7 +84,7 @@ export default {
 async function sendMail(env, { name, email, message }) {
   const SEND_TO = env.SEND_TO;
   const SEND_DOMAIN = env.SEND_DOMAIN;
-  const FROM_NAME = env.FROM_NAME || "Website Contact";
+  const FROM_NAME = env.FROM_NAME || "Neweee";
   const REPLY_TO = email || env.REPLY_TO || "";
 
   if (!SEND_TO || !SEND_DOMAIN) {
@@ -94,58 +94,60 @@ async function sendMail(env, { name, email, message }) {
     return json(500, { ok:false, error:"missing_MC_API_KEY" });
   }
 
-  // ---- DKIM параметры (ВАЖНО: ключ — ОДНОЙ строкой base64 DER)
-  const dkimDomain   = env.DKIM_DOMAIN || SEND_DOMAIN;   // d=
-  const dkimSelector = env.DKIM_SELECTOR || "";          // s=
-  const dkimKeyB64   = env.DKIM_PRIVATE_KEY || "";       // base64 (без BEGIN/END)
+  // ---- DKIM (ВАЖНО: ключ одной строкой base64 DER!)
+  const dkimDomain   = env.DKIM_DOMAIN || SEND_DOMAIN;
+  const dkimSelector = env.DKIM_SELECTOR || "";
+  const dkimKeyB64   = env.DKIM_PRIVATE_KEY || ""; // одна строка base64, без BEGIN/END
+
+  const dkimEnabled = !!(dkimDomain && dkimSelector && dkimKeyB64);
+
+  // ---- адрес для отладки (получишь дубль письма на этот ящик)
+  const BCC_DEBUG = env.BCC_DEBUG ? String(env.BCC_DEBUG).trim() : "";
 
   // ---- тело письма
-  const personalizations = [{
+  const personal = {
     to: [{ email: SEND_TO }],
-    // DKIM — строго внутри personalizations[0]
-    ...(dkimKeyB64 && dkimSelector && dkimDomain ? {
+    ...(BCC_DEBUG ? { bcc: [{ email: BCC_DEBUG }] } : {}),
+    ...(dkimEnabled ? {
       dkim_domain: dkimDomain,
       dkim_selector: dkimSelector,
       dkim_private_key: dkimKeyB64
     } : {})
-  }];
+  };
 
   const mail = {
-    personalizations,
+    personalizations: [ personal ],
     from: { email: `noreply@${SEND_DOMAIN}`, name: FROM_NAME },
     reply_to: REPLY_TO ? { email: REPLY_TO } : undefined,
     subject: `Сообщение с сайта: ${name || "без имени"}`,
-    content: [{ type: "text/plain", value: `От: ${name}\nEmail: ${email}\n\n${message}` }],
+    content: [
+      { type: "text/plain", value: `От: ${name}\nEmail: ${email}\n\n${message}` },
+      { type: "text/html",  value: `<p><b>От:</b> ${escapeHtml(name||"")}</p><p><b>Email:</b> ${escapeHtml(email||"")}</p><p>${escapeHtml(message||"").replace(/\n/g,"<br>")}</p><hr><p style="font:12px/1.4 system-ui">Отправлено с <a href="https://neweee.com">neweee.com</a></p>` }
+    ],
   };
 
-  // лог: включён ли DKIM (без утечки ключа)
-  console.log("DKIM:", {
-    enabled: !!(dkimKeyB64 && dkimSelector && dkimDomain),
-    d: dkimDomain, s: dkimSelector,
-    keyLen: dkimKeyB64 ? dkimKeyB64.length : 0
-  });
+  // короткая диагностика в лог
+  console.log("DKIM cfg:", { enabled: dkimEnabled, d: dkimDomain, s: dkimSelector, keyLen: dkimKeyB64.length, bcc: !!BCC_DEBUG });
 
-  // ---- вызов MailChannels
   const mcRes = await fetch("https://api.mailchannels.net/tx/v1/send", {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "X-Api-Key": env.MC_API_KEY,
-    },
+    headers: { "content-type": "application/json", "X-Api-Key": env.MC_API_KEY },
     body: JSON.stringify(mail),
   });
 
   const text = await mcRes.text();
-  console.log("MailChannels:", mcRes.status, (text || "").slice(0, 200));
+  const mcTrace = mcRes.headers.get("X-Message-Id") || mcRes.headers.get("x-request-id") || null;
+  console.log("MailChannels:", mcRes.status, (text || "").slice(0, 200), "trace:", mcTrace);
 
   if (!mcRes.ok) {
-    return json(mcRes.status, { ok:false, error:"mailchannels_failed", status: mcRes.status, text });
+    return json(mcRes.status, { ok:false, error:"mailchannels_failed", status: mcRes.status, text, mcTrace, dkimEnabled });
   }
-  const mcStatus = mcRes.status;
-  const mcTrace = mcRes.headers.get("X-Message-Id") || mcRes.headers.get("x-request-id") || null;
 
-  return json(200, { ok:true, sent:true, mcStatus, mcTrace });
+  return json(200, { ok:true, sent:true, mcStatus: mcRes.status, mcTrace, dkimEnabled });
 }
+
+function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+
 
 function json(status, data) {
   return new Response(JSON.stringify(data), {

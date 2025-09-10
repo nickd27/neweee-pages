@@ -42,7 +42,7 @@ button.btn, .btn{
 /* Нижняя «подушка» под sticky-footer */
 main{ padding-bottom: 120px; }
 
-/* Стрип с адресом и телефоном (внизу страницы, над футером) */
+/* Стрип с адресом и телефоном */
 .contact-strip{
   margin: 12px 0 24px;
   background: rgba(17,24,39,.82);
@@ -75,50 +75,50 @@ main{ padding-bottom: 120px; }
 <body class="contacts">
 <header>
   <div class="container nav">
-    <a href="index.html" class="badge">← На главную</a>
-    <span style="margin-left:4px">Контакты</span>
+    <a href="index.html" class="badge" id="backHome">← На главную</a>
+    <span style="margin-left:4px" id="pageTitle">Контакты</span>
   </div>
 </header>
 
 <main class="container">
   <!-- Карточка с формой -->
   <section class="card">
-    <h1>Связаться с нами</h1>
-    <p class="muted">Опишите задачу — мы предложим варианты решения и свяжемся с вами.</p>
+    <h1 id="h1">Связаться с нами</h1>
+    <p class="muted" id="lead">Опишите задачу — мы предложим варианты решения и свяжемся с вами.</p>
 
     <form id="briefForm" action="/contact" method="post" novalidate>
       <div class="form-grid">
         <div>
-          <label for="name">Ваше имя *</label>
+          <label for="name" id="lblName">Ваше имя *</label>
           <input id="name" name="name" required placeholder="Peter Novak">
         </div>
         <div>
-          <label for="email">Email *</label>
+          <label for="email" id="lblEmail">Email *</label>
           <input id="email" name="email" type="email" required placeholder="you@company.com">
         </div>
         <div>
-          <label for="phone">Телефон / WhatsApp</label>
+          <label for="phone" id="lblPhone">Телефон / WhatsApp</label>
           <input id="phone" name="phone" placeholder="+420 607 828 092">
         </div>
         <div>
-          <label for="company">Компания</label>
+          <label for="company" id="lblCompany">Компания</label>
           <input id="company" name="company" placeholder="ООО «Компания»">
         </div>
         <div>
-          <label for="service">Направление *</label>
+          <label for="service" id="lblService">Направление *</label>
           <select id="service" name="service" required>
-            <option value="" selected disabled>Выберите…</option>
-            <option>Энергетический инжиниринг</option>
-            <option>ФСА / ТРИЗ</option>
-            <option>Лабораторные исследования</option>
+            <option value="" selected disabled id="optChoose">Выберите…</option>
+            <option id="optEnergy">Энергетический инжиниринг</option>
+            <option id="optFSA">ФСА / ТРИЗ</option>
+            <option id="optLab">Лабораторные исследования</option>
           </select>
         </div>
         <div>
-          <label for="deadline">Срок / дедлайн</label>
+          <label for="deadline" id="lblDeadline">Срок / дедлайн</label>
           <input id="deadline" name="deadline" placeholder="Напр., до 30.09 или 4–6 недель">
         </div>
         <div style="grid-column:1/-1">
-          <label for="message">Краткое описание задачи *</label>
+          <label for="message" id="lblMessage">Краткое описание задачи *</label>
           <textarea id="message" name="message" required placeholder="1–2 абзаца: текущая ситуация, ограничения, желаемый результат"></textarea>
         </div>
 
@@ -131,12 +131,15 @@ main{ padding-bottom: 120px; }
       <div class="actions">
         <div id="ts-container"></div>
         <button type="submit" class="btn" id="submitBtn" disabled>Отправить</button>
-        <a class="btn" href="publications.html">Публикации</a>
+        <a class="btn" id="btnPubs" href="publications.html">Публикации</a>
       </div>
 
-      <!-- Fallback, если автоматическая отправка не удалась -->
+      <!-- Fallback -->
       <div id="fallback" class="card" style="margin-top:16px;display:none">
-        <p class="small">Если автоматическая отправка не прошла, скопируйте текст ниже и отправьте вручную на <a href="mailto:office@neweee.com">office@neweee.com</a>.</p>
+        <p class="small" id="fbNote">
+          Если автоматическая отправка не прошла, скопируйте текст ниже и отправьте вручную на
+          <a href="mailto:office@neweee.com">office@neweee.com</a>.
+        </p>
         <textarea id="fallbackText"></textarea>
         <div class="actions">
           <button type="button" class="btn" id="copyBtn">Скопировать</button>
@@ -145,12 +148,12 @@ main{ padding-bottom: 120px; }
     </form>
   </section>
 
-  <!-- НИЖНИЙ СТРИП: адрес компании и прямой телефон -->
+  <!-- НИЖНИЙ СТРИП -->
   <section class="contact-strip">
     <div class="grid">
       <div>
-        <h3>Адрес:</h3>
-        <address>
+        <h3 id="addrTitle">Адрес:</h3>
+        <address id="addrText">
           NEW ENERGY AND ENGINEERING LTD<br>
           Office No. 416, Burlington Tower, Business Bay Dubai<br>
           P.O. Box 487644, United Arab Emirates<br>
@@ -158,7 +161,7 @@ main{ padding-bottom: 120px; }
         </address>
       </div>
       <div>
-        <h3>Телефон: ( WhatsApp, Viber )</h3>
+        <h3 id="phoneTitle">Телефон: ( WhatsApp, Viber )</h3>
         <p style="margin:0"><a href="tel:+420607828092">+420 607 828 092</a></p>
         <p><a href="mailto:office@neweee.com">office@neweee.com</a></p>
       </div>
@@ -169,10 +172,9 @@ main{ padding-bottom: 120px; }
 <footer class="site-footer">© 2025 NEW ENERGY &amp; ENGINEERING LTD</footer>
 
 <script>
-// ===== Turnstile (explicit) — ключи как в вашей новой версии =====
+// ===== Turnstile (explicit) — ключи
 const SITEKEY_PAGES = '0x4AAAAAABzuSh1PhYJkUsxg'; // allowlist: neweee-pages.pages.dev
 const SITEKEY_PROD  = '0x4AAAAAABzukrBYa83MJypa';  // allowlist: ne​weee.com, www.ne​weee.com
-
 function pickSiteKey() {
   const h = location.hostname;
   if (h.endsWith('neweee-pages.pages.dev')) return SITEKEY_PAGES;
@@ -183,7 +185,6 @@ const SITE_KEY = pickSiteKey();
 
 let widgetId = null;
 function enableSubmit(on){ document.getElementById('submitBtn').disabled = !on; }
-
 function tsReady(){
   try{
     widgetId = turnstile.render('#ts-container', {
@@ -202,11 +203,161 @@ function tsReady(){
         enableSubmit(false);
       }
     });
-  }catch(e){
-    enableSubmit(false);
-  }
+  }catch(e){ enableSubmit(false); }
 }
 window.tsReady = tsReady;
+
+// ===== i18n =====
+
+// Нормализуем язык к 'ru' | 'en' | 'uk'
+function normalizeLang(v) {
+  v = (v || '').toString().toLowerCase();
+  if (v === 'ua' || v.startsWith('uk')) return 'uk';
+  if (v.startsWith('en')) return 'en';
+  return 'ru';
+}
+function getLang() {
+  let v = new URLSearchParams(location.search).get('lang');
+  if (!v && window.__lang) v = String(window.__lang);
+  if (!v && localStorage.getItem('lang')) v = localStorage.getItem('lang');
+  if (!v) v = document.documentElement.lang || navigator.language || 'ru';
+  return normalizeLang(v);
+}
+// Глобальный setter, если не задан твоим общим скриптом
+if (typeof window.setLang !== 'function') {
+  window.setLang = function (code) {
+    const lang = normalizeLang(code);
+    localStorage.setItem('lang', lang);
+    document.documentElement.lang = lang;
+    window.__lang = lang;
+    window.dispatchEvent(new CustomEvent('langchange', { detail: { lang } }));
+  };
+}
+
+const I18N = {
+  ru: {
+    nav: { back: '← На главную', title: 'Контакты' },
+    head: { h1: 'Связаться с нами', lead: 'Опишите задачу — мы предложим варианты решения и свяжемся с вами.' },
+    labels: {
+      name: 'Ваше имя *', email: 'Email *', phone: 'Телефон / WhatsApp', company: 'Компания',
+      service: 'Направление *', deadline: 'Срок / дедлайн', message: 'Краткое описание задачи *',
+      choose: 'Выберите…', energy: 'Энергетический инжиниринг', fsa: 'ФСА / ТРИЗ', lab: 'Лабораторные исследования'
+    },
+    ui: { send: 'Отправить', sending: 'Отправка…', pubs: 'Публикации', copy: 'Скопировать', copied: 'Скопировано ✓' },
+    msg: {
+      required: 'Пожалуйста, заполните обязательные поля.',
+      captcha: 'Подтвердите проверку «Я не робот».',
+      fail: 'Не удалось отправить форму. Попробуйте ещё раз через минуту.',
+      fallbackAlert: 'Не удалось отправить автоматически. Можно скопировать текст и отправить вручную.'
+    },
+    success: { title: 'Спасибо!', text: 'Мы получили вашу заявку и свяжемся с вами в ближайшее время.' },
+    addr: { title: 'Адрес:', phone: 'Телефон: ( WhatsApp, Viber )' },
+    fallbackNote: 'Если автоматическая отправка не прошла, скопируйте текст ниже и отправьте вручную на'
+  },
+  en: {
+    nav: { back: '← Home', title: 'Contacts' },
+    head: { h1: 'Get in touch', lead: 'Describe your task — we’ll propose solutions and get back to you.' },
+    labels: {
+      name: 'Your name *', email: 'Email *', phone: 'Phone / WhatsApp', company: 'Company',
+      service: 'Service *', deadline: 'Deadline', message: 'Short brief *',
+      choose: 'Choose…', energy: 'Energy engineering', fsa: 'FCA / TRIZ', lab: 'Laboratory research'
+    },
+    ui: { send: 'Send', sending: 'Sending…', pubs: 'Publications', copy: 'Copy', copied: 'Copied ✓' },
+    msg: {
+      required: 'Please fill in the required fields.',
+      captcha: 'Please complete the “I’m not a robot” check.',
+      fail: 'We couldn’t send the form. Please try again in a minute.',
+      fallbackAlert: 'Automatic sending failed. You can copy the text and send it manually.'
+    },
+    success: { title: 'Thank you!', text: 'We’ve received your request and will get back to you shortly.' },
+    addr: { title: 'Address:', phone: 'Phone: ( WhatsApp, Viber )' },
+    fallbackNote: 'If automatic sending failed, copy the text below and email it to'
+  },
+  uk: {
+    nav: { back: '← На головну', title: 'Контакти' },
+    head: { h1: 'Зв’яжіться з нами', lead: 'Опишіть задачу — ми запропонуємо рішення і невдовзі відповімо.' },
+    labels: {
+      name: 'Ваше ім’я *', email: 'Email *', phone: 'Телефон / WhatsApp', company: 'Компанія',
+      service: 'Напрям *', deadline: 'Строк / дедлайн', message: 'Короткий опис задачі *',
+      choose: 'Оберіть…', energy: 'Енергетичний інжиніринг', fsa: 'ФСА / TRIZ', lab: 'Лабораторні дослідження'
+    },
+    ui: { send: 'Надіслати', sending: 'Надсилання…', pubs: 'Публікації', copy: 'Скопіювати', copied: 'Скопійовано ✓' },
+    msg: {
+      required: 'Будь ласка, заповніть обов’язкові поля.',
+      captcha: 'Підтвердіть перевірку «Я не робот».',
+      fail: 'Не вдалося надіслати форму. Спробуйте ще раз за хвилину.',
+      fallbackAlert: 'Автоматичне надсилання не спрацювало. Ви можете скопіювати текст і надіслати вручну.'
+    },
+    success: { title: 'Дякуємо!', text: 'Ми отримали вашу заявку і невдовзі з вами зв’яжемося.' },
+    addr: { title: 'Адреса:', phone: 'Телефон: ( WhatsApp, Viber )' },
+    fallbackNote: 'Якщо автоматичне надсилання не спрацювало, скопіюйте текст нижче й надішліть на'
+  }
+};
+
+function t(path) {
+  const lang = getLang();
+  const segs = path.split('.');
+  let obj = I18N[lang] || I18N.ru;
+  for (const s of segs) { obj = obj?.[s]; if (!obj) break; }
+  return (typeof obj === 'string') ? obj : '';
+}
+
+function applyLangUI() {
+  const lang = getLang();
+  document.documentElement.lang = lang;
+
+  // Навигация/заголовки/подписи
+  const $ = (id)=>document.getElementById(id);
+  if ($('backHome')) $('backHome').textContent = t('nav.back');
+  if ($('pageTitle')) $('pageTitle').textContent = t('nav.title');
+  if ($('h1')) $('h1').textContent = t('head.h1');
+  if ($('lead')) $('lead').textContent = t('head.lead');
+
+  // Метки формы + опции
+  if ($('lblName')) $('lblName').textContent = t('labels.name');
+  if ($('lblEmail')) $('lblEmail').textContent = t('labels.email');
+  if ($('lblPhone')) $('lblPhone').textContent = t('labels.phone');
+  if ($('lblCompany')) $('lblCompany').textContent = t('labels.company');
+  if ($('lblService')) $('lblService').textContent = t('labels.service');
+  if ($('lblDeadline')) $('lblDeadline').textContent = t('labels.deadline');
+  if ($('lblMessage')) $('lblMessage').textContent = t('labels.message');
+
+  if ($('optChoose')) $('optChoose').textContent = t('labels.choose');
+  if ($('optEnergy')) $('optEnergy').textContent = t('labels.energy');
+  if ($('optFSA')) $('optFSA').textContent = t('labels.fsa');
+  if ($('optLab')) $('optLab').textContent = t('labels.lab');
+
+  // Кнопки
+  const submitBtn = $('submitBtn');
+  if (submitBtn) submitBtn.textContent = t('ui.send');
+  const btnPubs = $('btnPubs');
+  if (btnPubs) btnPubs.textContent = t('ui.pubs');
+  const copyBtn = $('copyBtn');
+  if (copyBtn) copyBtn.textContent = t('ui.copy');
+
+  // Нижний блок
+  if ($('addrTitle')) $('addrTitle').textContent = t('addr.title');
+  if ($('phoneTitle')) $('phoneTitle').textContent = t('addr.phone');
+
+  // Перевод подсказки во fallback, если открыт
+  const fb = $('fallback'), note = $('fbNote');
+  if (fb && note) {
+    const mail = (note.querySelector('a')?.outerHTML) || 'office@neweee.com';
+    note.innerHTML = `${t('fallbackNote')} ${mail}.`;
+  }
+}
+
+// Реакция на общий переключатель
+window.addEventListener('langchange', applyLangUI);
+document.addEventListener('DOMContentLoaded', applyLangUI);
+
+// Быстрый хэндлер для кнопок с data-set-lang (если есть в шаблоне)
+document.addEventListener('click', (e)=>{
+  const el = e.target.closest('[data-set-lang]');
+  if (!el) return;
+  const lang = el.getAttribute('data-set-lang');
+  if (lang) window.setLang(lang);
+});
 
 // ===== Отправка формы: x-www-form-urlencoded на /contact =====
 const f = document.getElementById('briefForm');
@@ -217,42 +368,22 @@ const copyBtn = document.getElementById('copyBtn');
 function val(id){ return (document.getElementById(id)?.value || "").trim(); }
 function isSpam(){ return (document.getElementById('website')?.value || "").trim().length > 0; }
 
-function getLang() {
-  let v = new URLSearchParams(location.search).get('lang');
-  if (!v && window.__lang) v = String(window.__lang);
-  if (!v && localStorage.getItem('lang')) v = localStorage.getItem('lang');
-  if (!v) v = document.documentElement.lang || navigator.language || 'ru';
-  v = String(v).toLowerCase();
-
-  if (v === 'ua' || v.startsWith('uk')) return 'uk'; // ua → uk
-  if (v.startsWith('en')) return 'en';
-  return 'ru';
-}
-
-// --- Тексты «успеха» тремя языками
-const successMsg = {
-  ru: { title: 'Спасибо!', text: 'Мы получили вашу заявку и свяжемся с вами в ближайшее время.' },
-  en: { title: 'Thank you!', text: 'We’ve received your request and will get back to you shortly.' },
-  uk: { title: 'Дякуємо!', text: 'Ми отримали вашу заявку і невдовзі з вами зв’яжемося.' }
-};
-  
 f.addEventListener('submit', async (e)=>{
   e.preventDefault();
   if(isSpam()) return;
 
   const required = ['name','email','service','message'];
   for(const id of required){
-    if(!val(id)){ alert('Пожалуйста, заполните обязательные поля.'); return; }
+    if(!val(id)){ alert(t('msg.required')); return; }
   }
 
   const submitBtn = document.getElementById('submitBtn');
-  submitBtn.disabled = true; submitBtn.textContent = 'Отправка…';
+  submitBtn.disabled = true; submitBtn.textContent = t('ui.sending');
 
   try{
     const fd = new FormData(f);
-    // гарантируем наличие токена
     const tok = document.getElementById('ts-response').value || '';
-    if(!tok){ alert('Подтвердите проверку «Я не робот».'); throw new Error('no token'); }
+    if(!tok){ alert(t('msg.captcha')); throw new Error('no token'); }
     fd.set('cf-turnstile-response', tok);
 
     const params = new URLSearchParams();
@@ -266,37 +397,38 @@ f.addEventListener('submit', async (e)=>{
     const json = await res.json().catch(()=> ({}));
 
     if(res.ok && json && json.ok){
-      f.innerHTML = '<h2>Спасибо!</h2><p class="muted">Мы получили вашу заявку и свяжемся с вами в ближайшее время.</p>';
+      const m = { title: t('success.title'), text: t('success.text') };
+      f.innerHTML = `<h2>${m.title}</h2><p class="muted">${m.text}</p>`;
     }else{
       throw new Error(json && (json.error || json.text) || ('status '+res.status));
     }
   }catch(err){
     // Fallback — собрать письмо
     const lines = [
-      `Имя: ${val('name')}`,
-      `Email: ${val('email')}`,
-      val('phone') ? `Телефон: ${val('phone')}` : null,
-      val('company') ? `Компания: ${val('company')}` : null,
-      `Направление: ${val('service')}`,
-      val('deadline') ? `Срок: ${val('deadline')}` : null,
+      `${t('labels.name').replace(' *','')}: ${val('name')}`,
+      `${t('labels.email').replace(' *','')}: ${val('email')}`,
+      val('phone') ? `${t('labels.phone')}: ${val('phone')}` : null,
+      val('company') ? `${t('labels.company')}: ${val('company')}` : null,
+      `${t('labels.service').replace(' *','')}: ${val('service')}`,
+      val('deadline') ? `${t('labels.deadline')}: ${val('deadline')}` : null,
       '',
-      'Задача:',
+      (t('labels.message').replace(' *','') + ':'),
       val('message')
     ].filter(Boolean);
     fbText.value = lines.join('\r\n');
     fb.style.display = 'block';
-    alert('Не удалось отправить автоматически. Можно скопировать текст и отправить вручную.');
+    alert(t('msg.fallbackAlert'));
   }finally{
     if(window.turnstile && widgetId!==null) turnstile.reset(widgetId);
-    submitBtn.disabled = true; submitBtn.textContent = 'Отправить';
+    submitBtn.disabled = true; submitBtn.textContent = t('ui.send');
   }
 });
 
 copyBtn?.addEventListener('click', async () => {
   try{
     await navigator.clipboard.writeText(fbText.value);
-    copyBtn.textContent = 'Скопировано ✓';
-    setTimeout(()=> copyBtn.textContent = 'Скопировать', 1500);
+    copyBtn.textContent = t('ui.copied');
+    setTimeout(()=> copyBtn.textContent = t('ui.copy'), 1500);
   }catch(e){
     fbText.select(); document.execCommand('copy');
   }

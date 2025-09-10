@@ -1,5 +1,6 @@
 {
   "version": 1,
-  "include": ["/api/*", "/env-check"],
+  "include": ["/api/*", "/env-check", "/contact"],
   "exclude": []
 }
+

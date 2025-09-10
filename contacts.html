@@ -217,6 +217,25 @@ const copyBtn = document.getElementById('copyBtn');
 function val(id){ return (document.getElementById(id)?.value || "").trim(); }
 function isSpam(){ return (document.getElementById('website')?.value || "").trim().length > 0; }
 
+function getLang() {
+  let v = new URLSearchParams(location.search).get('lang');
+  if (!v && window.__lang) v = String(window.__lang);
+  if (!v && localStorage.getItem('lang')) v = localStorage.getItem('lang');
+  if (!v) v = document.documentElement.lang || navigator.language || 'ru';
+  v = String(v).toLowerCase();
+
+  if (v === 'ua' || v.startsWith('uk')) return 'uk'; // ua → uk
+  if (v.startsWith('en')) return 'en';
+  return 'ru';
+}
+
+// --- Тексты «успеха» тремя языками
+const successMsg = {
+  ru: { title: 'Спасибо!', text: 'Мы получили вашу заявку и свяжемся с вами в ближайшее время.' },
+  en: { title: 'Thank you!', text: 'We’ve received your request and will get back to you shortly.' },
+  uk: { title: 'Дякуємо!', text: 'Ми отримали вашу заявку і невдовзі з вами зв’яжемося.' }
+};
+  
 f.addEventListener('submit', async (e)=>{
   e.preventDefault();
   if(isSpam()) return;

@@ -93,28 +93,64 @@ header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(
 .flow-v{ display:none }
 .flow .lbl{ fill:#e5e7eb; font-size:14px; font-weight:500 }
 
-/* === Мобильный визуль вместо «синих кружков» === */
-.mobile-hero{
-  display:none; /* по умолчанию скрыта (на десктопе) */
-}
+  
+/* === Мобильный визуал вместо «синих кружков»: мягкое энергетическое свечение === */
+.mobile-hero{ display:none; } /* по умолчанию скрыто (десктоп) */
 
 @media (max-width:640px){
-  /* на телефоне прячем процесс-граф целиком */
-  .flow{ display: none !important; }
+  /* прячем процесс-граф на телефоне */
+  .flow{ display:none !important; }
 
-  /* и показываем баннер-картинку */
+  /* а тут — лёгкая «энергетическая» анимация без изображений */
   .mobile-hero{
     display:block;
-    height:200px;                 /* можно 180–240, по вкусу */
+    position:relative;
+    height:220px;                 /* можно 180–260 по вкусу */
     margin:10px 0 8px;
-    border-radius:14px;
-    background:#0b0f19 center/cover no-repeat;
-    background-image: image-set(
-      url('assets/images/services-bg__.jpg') type('image/jpeg') 1x
-    );
-    border:1px solid rgba(255,255,255,.06);
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.08);
+    background:
+      radial-gradient(120% 80% at 10% 20%, rgba(34,211,238,.18) 0%, transparent 60%),
+      radial-gradient(120% 80% at 90% 10%, rgba(59,130,246,.16) 0%, transparent 60%),
+      radial-gradient(120% 80% at 50% 120%, rgba(125,211,252,.14) 0%, transparent 60%),
+      #0b0f19;
+    will-change: transform, opacity, filter;
+  }
+
+  /* два слоя мерцающего свечения (conic-gradient), очень «лёгкие» для GPU */
+  .mobile-hero::before,
+  .mobile-hero::after{
+    content:"";
+    position:absolute; inset:-50%;
+    background:
+      conic-gradient(from 0deg at 50% 50%,
+        rgba(34,211,238,0) 0% 10%,
+        rgba(34,211,238,.35) 15%,
+        rgba(96,165,250,0) 25% 40%,
+        rgba(59,130,246,.35) 50%,
+        rgba(96,165,250,0) 60% 75%,
+        rgba(34,211,238,.35) 85%,
+        rgba(34,211,238,0) 100%);
+    filter: blur(40px) saturate(130%);
+    opacity:.55;
+    animation: spin 18s linear infinite;
+  }
+  .mobile-hero::after{
+    animation-duration:28s;      /* второй слой вращаем медленнее */
+    animation-direction:reverse;
+    opacity:.35;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* уважение к настройкам доступности — меньше/без анимации */
+  @media (prefers-reduced-motion: reduce){
+    .mobile-hero::before,
+    .mobile-hero::after{ animation:none; opacity:.4; }
   }
 }
+
 
   
 /* мобильная версия: прячем горизонтальный граф и ограничиваем размеры вертикального */
@@ -151,8 +187,8 @@ header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(
       <h1>NEW ENERGY & ENGINEERING</h1>
       <p class="lead">Инжиниринговые услуги в энергетике - от разработки ТЭО проекта до ввода энергоблока в эксплуатацию. Промышленный инжиниринг - от выполнения ФСА/ТРИЗ и проектирования до лабораторной отработки и внедрения решений.</p>
 
-<!-- показ только на мобильных (см. CSS) -->
-<div class="mobile-hero" role="img" aria-label="Stol.jpg"></div>
+<!-- только на мобилке: см. CSS выше -->
+<div class="mobile-hero" role="img" aria-label="Энергетическое свечение"></div>
       
      <!-- Граф процесса (адаптивный SVG) -->
 <figure class="flow" role="img" aria-label="Этапы процесса: Диагностика → Концепт → Проект → Испытания → Внедрение">

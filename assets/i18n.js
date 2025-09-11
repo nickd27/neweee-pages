@@ -558,22 +558,20 @@
     }
     fill(1,'a1h','a1p'); fill(2,'a2h','a2p'); fill(3,'a3h','a3p');
   }
-
-// --- ЗАМЕНИ ЭТУ ФУНКЦИЮ В assets/i18n.js ---
-function applyContacts(lang){
+  function applyContacts(lang){
   var t = T.contacts[lang] || T.contacts.ru;
 
-  // Заголовок/лид наверху
-  var H1 = qs('body.contacts h1'); if (H1) H1.textContent = t.header;
-  var lead = qs('body.contacts .card p.muted'); if (lead) lead.textContent = t.lead;
+  // Верх страницы
+  var H1   = qs('body.contacts h1');                      if (H1)   H1.textContent   = t.header;
+  var lead = qs('body.contacts .card p.muted');           if (lead) lead.textContent = t.lead;
 
   // Метки формы
   function L(id, txt){ var el = qs('label[for="'+id+'"]'); if (el) el.textContent = txt; }
   L('name',t.name); L('email',t.email); L('phone',t.phone);
   L('company',t.company); L('service',t.service); L('deadline',t.deadline); L('message',t.message);
 
-  // Опции селекта + mailto-фолбек (оставил как было)
-  var sel = qs('#service'); 
+  // Селект + mailto-фолбек (как было)
+  var sel = qs('#service');
   if (sel){
     var opts = qsa('option', sel);
     if (opts[0]) opts[0].textContent = t.selectPlaceholder;
@@ -589,42 +587,46 @@ function applyContacts(lang){
     }
   }
 
-  // Плейсхолдеры/кнопки/тексты как раньше
+  // Плейсхолдеры/кнопки/подписи (как было)
   function PH(id,val){ var el=qs('#'+id); if(el) el.setAttribute('placeholder', val); }
   PH('name',t.placeholders.name); PH('email',t.placeholders.email); PH('phone',t.placeholders.phone);
   PH('company',t.placeholders.company); PH('deadline',t.placeholders.deadline); PH('message',t.placeholders.message);
   var hp = qs('#website'); if(hp) hp.setAttribute('placeholder', t.hp);
-  var sub = qs('#briefForm .actions .btn[type="submit"]'); if (sub) sub.textContent = t.submit;
+  var sub  = qs('#briefForm .actions .btn[type="submit"]');         if (sub)  sub.textContent  = t.submit;
   var pubs = qs('#briefForm .actions a.btn[href="publications.html"]'); if (pubs) pubs.textContent = t.pubs;
   var smalls = qsa('body.contacts .small'); if (smalls[0]) smalls[0].textContent = t.note;
   var fb = qs('#fallback .small'); if (fb) fb.textContent = t.fallbackNote;
   var copyBtn = qs('#copyBtn'); if (copyBtn) copyBtn.textContent = t.copy;
 
-  // --- НОВОЕ: заголовки адресов по ID (не трогаем произвольные h3) ---
-  var TITLES = {
-    ru: { reg:'Адрес регистрации',  mail:'Почтовый адрес' },
-    en: { reg:'Registered address', mail:'Mailing address' },
-    uk: { reg:'Адреса реєстрації',  mail:'Поштова адреса' }
-  };
-  var TT = TITLES[lang] || TITLES.ru;
+  // --- Новое: если на странице есть ID заголовков адресов — правим ТОЛЬКО их ---
+  var regH  = qs('#regAddrTitle');
+  var mailH = qs('#mailAddrTitle');
+  if (regH || mailH){
+    var TITLES = {
+      ru: { reg:'Адрес регистрации',  mail:'Почтовый адрес' },
+      en: { reg:'Registered address', mail:'Mailing address' },
+      uk: { reg:'Адреса реєстрації',  mail:'Поштова адреса' }
+    };
+    var TT = TITLES[(lang||'ru').toLowerCase()] || TITLES.ru;
+    if (regH)  regH.textContent  = TT.reg;
+    if (mailH) mailH.textContent = TT.mail;
 
-  var regH = qs('#regAddrTitle'); if (regH) regH.textContent = TT.reg;
-  var mailH = qs('#mailAddrTitle'); if (mailH) mailH.textContent = TT.mail;
+    // Добавляем «воздух» снизу у почтового адреса
+    var mailText = qs('#mailAddrText');
+    if (mailText && !/<br>\s*$/i.test(mailText.innerHTML)) {
+      mailText.innerHTML = (mailText.innerHTML || '').trim() + '<br>';
+    }
 
-  // Добавить «воздух» под почтовым адресом
-  var mailText = qs('#mailAddrText');
-  if (mailText && !/<br>\s*$/i.test(mailText.innerHTML)) {
-    mailText.innerHTML = mailText.innerHTML.trim() + '<br>';
-  }
+  } else {
+    // --- Fallback для старой вёрстки БЕЗ ID (оставляем твою прежнюю логику) ---
+    var h3s = qsa('body.contacts .contact-strip h3');
+    if (h3s[0]) h3s[0].textContent = t.addrTitle;
+    if (h3s[1]) h3s[1].textContent = t.phoneTitle;
 
-  // --- Fallback для старой вёрстки (если ID нет): оставляем твою прежнюю логику ---
-  if (!regH && !mailH) {
     var addrH = qs('body.contacts .contact-strip h3:first-child'); if (addrH) addrH.textContent = t.addrTitle;
     var telH  = qs('body.contacts .contact-strip h3:nth-child(2)'); if (telH)  telH.textContent  = t.phoneTitle;
   }
 }
-
-  
   function replaceCardHTML(lang, key){
   var card = qs('main .card'); 
   if (!card) return;

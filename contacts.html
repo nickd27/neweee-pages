@@ -586,5 +586,34 @@ copyBtn?.addEventListener('click', async () => {
   }
 });
 </script>
+<script>
+(function(){
+  function enforceAddrHeadings(){
+    const lang = (document.documentElement.lang || 'ru').slice(0,2);
+    const map = {
+      ru: { reg:'Адрес регистрации:', mail:'Почтовый адрес:' },
+      en: { reg:'Registered address:', mail:'Mailing address:' },
+      uk: { reg:'Адреса реєстрації:', mail:'Поштова адреса:' }
+    };
+    const L = map[lang] || map.ru;
+
+    const hReg = document.getElementById('regAddrTitle');
+    const hMail = document.getElementById('mailAddrTitle');
+    if (hReg && hReg.textContent.trim() !== L.reg) hReg.textContent = L.reg;
+    if (hMail && hMail.textContent.trim() !== L.mail) hMail.textContent = L.mail;
+
+    const mailText = document.getElementById('mailAddrText');
+    if (mailText && !/<br>\s*$/i.test(mailText.innerHTML)) {
+      mailText.innerHTML = mailText.innerHTML.trim() + '<br>'; // «воздух» снизу
+    }
+  }
+
+  // Запускаем после всех скриптов и при смене языка
+  window.addEventListener('DOMContentLoaded', ()=>{ setTimeout(enforceAddrHeadings, 0); setTimeout(enforceAddrHeadings, 250); });
+  window.addEventListener('load', ()=>{ setTimeout(enforceAddrHeadings, 0); });
+  window.addEventListener('langchange', ()=>{ setTimeout(enforceAddrHeadings, 0); });
+})();
+</script>
+  
 </body>
 </html>

@@ -93,6 +93,30 @@ header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(
 .flow-v{ display:none }
 .flow .lbl{ fill:#e5e7eb; font-size:14px; font-weight:500 }
 
+/* === Мобильный визуль вместо «синих кружков» === */
+.mobile-hero{
+  display:none; /* по умолчанию скрыта (на десктопе) */
+}
+
+@media (max-width:640px){
+  /* на телефоне прячем процесс-граф целиком */
+  .flow{ display: none !important; }
+
+  /* и показываем баннер-картинку */
+  .mobile-hero{
+    display:block;
+    height:200px;                 /* можно 180–240, по вкусу */
+    margin:10px 0 8px;
+    border-radius:14px;
+    background:#0b0f19 center/cover no-repeat;
+    background-image: image-set(
+      url('assets/images/services-bg__.jpg') type('image/jpeg') 1x
+    );
+    border:1px solid rgba(255,255,255,.06);
+  }
+}
+
+  
 /* мобильная версия: прячем горизонтальный граф и ограничиваем размеры вертикального */
 @media (max-width:640px){
   .flow-h{ display:none }

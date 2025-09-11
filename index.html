@@ -164,6 +164,68 @@ header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(
   }
   .flow .lbl{ font-size:12px }
 }
+
+/* По умолчанию обёртка не влияет на десктопную вёрстку */
+.mobile-glow{ display: contents; }
+
+/* === Мобильный вид: скрываем «кружки» и включаем тёплое свечение под текстом === */
+@media (max-width:640px){
+  .flow{ display: none !important; }
+
+  .mobile-glow{
+    display:block;
+    position:relative;
+    padding:14px 14px 16px;       /* внутренние отступы вокруг текста */
+    margin:10px 0 8px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.08);
+    overflow:hidden;
+    /* тёплые «подсветки» (радикальные), + тёмная база */
+    background:
+      radial-gradient(120% 80% at 12% 18%, rgba(255,200,100,.22) 0%, transparent 60%),
+      radial-gradient(120% 80% at 88% 14%, rgba(255,170,80,.18) 0%, transparent 60%),
+      radial-gradient(120% 100% at 50% 120%, rgba(255,220,140,.16) 0%, transparent 60%),
+      #0b0f19;
+  }
+
+  /* два «газовых» слоя поверх — вращаются очень медленно */
+  .mobile-glow::before,
+  .mobile-glow::after{
+    content:"";
+    position:absolute; inset:-50%;
+    background:
+      conic-gradient(from 0deg at 50% 50%,
+        rgba(255,215,130,0) 0% 10%,
+        rgba(255,215,130,.45) 15%,
+        rgba(255,160,90,0) 25% 40%,
+        rgba(255,160,90,.42) 50%,
+        rgba(255,160,90,0) 60% 75%,
+        rgba(255,230,160,.45) 85%,
+        rgba(255,230,160,0) 100%);
+    filter: blur(42px) saturate(125%) brightness(1.18);
+    opacity:.55;
+    animation: spin 24s linear infinite;
+    z-index:0;
+  }
+  .mobile-glow::after{
+    animation-duration:38s;       /* медленнее и в обратную сторону */
+    animation-direction:reverse;
+    opacity:.38;
+  }
+
+  /* текст поверх свечения */
+  .mobile-glow > *{ position:relative; z-index:1; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* уважение к настройкам доступности */
+  @media (prefers-reduced-motion: reduce){
+    .mobile-glow::before,
+    .mobile-glow::after{ animation:none; opacity:.4; }
+  }
+}
+
+  
 </style>
 </head>
 
@@ -183,12 +245,10 @@ header{position:sticky;top:0;background:rgba(10,14,32,.75);backdrop-filter:blur(
 
   <!-- HERO: текст слева, коллаж справа -->
   <section class="hero">
-    <div>
+    <div class="mobile-glow">
       <h1>NEW ENERGY & ENGINEERING</h1>
       <p class="lead">Инжиниринговые услуги в энергетике - от разработки ТЭО проекта до ввода энергоблока в эксплуатацию. Промышленный инжиниринг - от выполнения ФСА/ТРИЗ и проектирования до лабораторной отработки и внедрения решений.</p>
 
-<!-- только на мобилке: см. CSS выше -->
-<div class="mobile-hero" role="img" aria-label="Энергетическое свечение"></div>
       
      <!-- Граф процесса (адаптивный SVG) -->
 <figure class="flow" role="img" aria-label="Этапы процесса: Диагностика → Концепт → Проект → Испытания → Внедрение">

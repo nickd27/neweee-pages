@@ -42,6 +42,11 @@ button.btn, .btn{
 /* uploader */
 .file-uploader{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 #filesInfo{min-height:1em}
+#filesList{margin:.25rem 0 0; padding:0; list-style:none; font-size:12px; color:var(--muted)}
+#filesList li{display:flex; align-items:center; gap:8px; margin:.15rem 0; }
+.file-name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:360px;}
+.remove-file{border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:2px 6px; cursor:pointer; font-size:11px; background:transparent; color:var(--text)}
+.remove-file:hover{border-color:rgba(255,255,255,.45)}
 
 /* Нижняя «подушка» под sticky-footer */
 main{ padding-bottom: 120px; }
@@ -154,13 +159,14 @@ main{ padding-bottom: 120px; }
 
       <!-- Вложения -->
       <div style="grid-column:1/-1">
-        <label id="lblFiles" data-i18n="labels.attach">Вложения (PDF/JPG, до 5 МБ, до 3 файлов)</label>
+        <label id="lblFiles" data-i18n="labels.attach">Вложения (PDF/JPG/PNG, до 5 МБ, до 3 файлов)</label>
         <div class="file-uploader">
-          <input id="files" name="files" type="file" accept=".pdf,.jpg,.jpeg" multiple hidden>
+          <input id="files" name="files" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple hidden>
           <button type="button" class="btn" id="btnPickFiles" data-i18n="ui.attach_btn">Вложить файлы</button>
           <span class="small" id="filesInfo" data-i18n="ui.files_none">Файлы не выбраны</span>
         </div>
-        <p class="small" id="hintFiles" data-i18n="hint_attach">Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.</p>
+        <ul id="filesList"></ul>
+        <p class="small" id="hintFiles" data-i18n="hint_attach">Допустимые: PDF, JPG, PNG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.</p>
       </div>
 
       <!-- Turnstile -->
@@ -294,7 +300,7 @@ function tsReady(){
 }
 window.tsReady = tsReady;
 
-// ===== i18n helpers & dict =====
+// ===== i18n =====
 function normalizeLang(v) {
   v = (v || '').toString().toLowerCase();
   if (v === 'ua' || v.startsWith('uk')) return 'uk';
@@ -326,7 +332,7 @@ const I18N = {
       name: 'Ваше имя *', email: 'Email *', phone: 'Телефон / WhatsApp', company: 'Компания',
       service: 'Направление *', deadline: 'Срок / дедлайн', message: 'Краткое описание задачи *',
       choose: 'Выберите…', energy: 'Энергетический инжиниринг', fsa: 'ФСА / ТРИЗ', lab: 'Лабораторные исследования',
-      attach: 'Вложения (PDF/JPG, до 5 МБ, до 3 файлов)'
+      attach: 'Вложения (PDF/JPG/PNG, до 5 МБ, до 3 файлов)'
     },
     ph: {
       name: 'Иван Иванов',
@@ -338,7 +344,7 @@ const I18N = {
     },
     ui: {
       send: 'Отправить', sending: 'Отправка…', pubs: 'Публикации', copy: 'Скопировать', copied: 'Скопировано ✓',
-      attach_btn: 'Вложить файлы', files_none: 'Файлы не выбраны', files_selected: 'Выбрано файлов: {n}'
+      attach_btn: 'Вложить файлы', files_none: 'Файлы не выбраны', files_selected: 'Выбрано файлов: {n}', remove: 'Удалить'
     },
     msg: {
       required: 'Пожалуйста, заполните обязательные поля.',
@@ -357,7 +363,7 @@ const I18N = {
         'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
-    hint_attach: 'Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.',
+    hint_attach: 'Допустимые: PDF, JPG, PNG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.',
     fallbackNote: 'Если автоматическая отправка не прошла, скопируйте текст ниже и отправьте вручную на'
   },
   en:{
@@ -367,7 +373,7 @@ const I18N = {
       name: 'Your name *', email: 'Email *', phone: 'Phone / WhatsApp', company: 'Company',
       service: 'Service *', deadline: 'Deadline', message: 'Short brief *',
       choose: 'Choose…', energy: 'Energy engineering', fsa: 'FCA / TRIZ', lab: 'Laboratory research',
-      attach: 'Attachments (PDF/JPG, up to 5 MB, max 3 files)'
+      attach: 'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)'
     },
     ph: {
       name: 'John Smith',
@@ -379,7 +385,7 @@ const I18N = {
     },
     ui: {
       send: 'Send', sending: 'Sending…', pubs: 'Publications', copy: 'Copy', copied: 'Copied ✓',
-      attach_btn: 'Attach files', files_none: 'No files selected', files_selected: 'Files selected: {n}'
+      attach_btn: 'Attach files', files_none: 'No files selected', files_selected: 'Files selected: {n}', remove: 'Remove'
     },
     msg: {
       required: 'Please fill in the required fields.',
@@ -398,7 +404,7 @@ const I18N = {
         'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
-    hint_attach: 'Allowed: PDF, JPG. Max 3 files, 5 MB each. Up to 15 MB total.',
+    hint_attach: 'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.',
     fallbackNote: 'If automatic sending failed, copy the text below and email it to'
   },
   uk:{
@@ -408,7 +414,7 @@ const I18N = {
       name: 'Ваше ім’я *', email: 'Email *', phone: 'Телефон / WhatsApp', company: 'Компанія',
       service: 'Напрям *', deadline: 'Строк / дедлайн', message: 'Короткий опис задачі *',
       choose: 'Оберіть…', energy: 'Енергетичний інжиніринг', fsa: 'ФСА / TRIZ', lab: 'Лабораторні дослідження',
-      attach: 'Вкладення (PDF/JPG, до 5 МБ, максимум 3 файли)'
+      attach: 'Вкладення (PDF/JPG/PNG, до 5 МБ, максимум 3 файли)'
     },
     ph: {
       name: 'Іван Іванов',
@@ -420,7 +426,7 @@ const I18N = {
     },
     ui: {
       send: 'Надіслати', sending: 'Надсилання…', pubs: 'Публікації', copy: 'Скопіювати', copied: 'Скопійовано ✓',
-      attach_btn: 'Додати файли', files_none: 'Файли не вибрані', files_selected: 'Вибрано файлів: {n}'
+      attach_btn: 'Додати файли', files_none: 'Файли не вибрані', files_selected: 'Вибрано файлів: {n}', remove: 'Видалити'
     },
     msg: {
       required: 'Будь ласка, заповніть обов’язкові поля.',
@@ -439,10 +445,13 @@ const I18N = {
         'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
-    hint_attach: 'Дозволено: PDF, JPG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.',
+    hint_attach: 'Дозволено: PDF, JPG, PNG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.',
     fallbackNote: 'Якщо автоматичне надсилання не спрацювало, скопіюйте текст нижче й надішліть на'
   }
 };
+
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
 function t(path) {
   const lang = getLang();
@@ -479,14 +488,6 @@ function applyLangUI() {
   if ($id('optFSA')) $id('optFSA').textContent = t('labels.fsa');
   if ($id('optLab')) $id('optLab').textContent = t('labels.lab');
 
-  const setPh = (id, key) => { const el = $id(id); if (el) el.placeholder = t('ph.'+key); };
-  setPh('name', 'name'); setPh('email', 'email'); setPh('phone', 'phone');
-  setPh('company', 'company'); setPh('deadline', 'deadline'); setPh('message', 'message');
-
-  const submitBtn = $id('submitBtn'); if (submitBtn) submitBtn.textContent = t('ui.send');
-  const btnPubs = $id('btnPubs'); if (btnPubs) btnPubs.textContent = t('ui.pubs');
-  const copyBtn = $id('copyBtn'); if (copyBtn) copyBtn.textContent = t('ui.copy');
-
   if ($id('regAddrTitle')) $id('regAddrTitle').textContent = t('addr.reg_title');
   if ($id('mailAddrTitle')) $id('mailAddrTitle').textContent = t('addr.mail_title');
   if ($id('regAddrText')) $id('regAddrText').innerHTML = t('addr.reg_text');
@@ -498,11 +499,45 @@ function applyLangUI() {
     note.innerHTML = `${t('fallbackNote')} ${mail}.`;
   }
 }
-
 window.addEventListener('langchange', applyLangUI);
 document.addEventListener('DOMContentLoaded', applyLangUI);
 
-// Выбор файлов
+// ===== Хранилище выбранных файлов (чтобы добирать файлами в несколько подходов)
+let filesStore = []; // массив File
+function fileKey(f){ return [f.name, f.size, f.lastModified].join('|'); }
+
+function renderFilesList(){
+  const list = document.getElementById('filesList');
+  const info = document.getElementById('filesInfo');
+  list.innerHTML = '';
+  if (!filesStore.length) {
+    info.textContent = t('ui.files_none');
+    return;
+  }
+  info.textContent = (t('ui.files_selected') || 'Files selected: {n}').replace('{n}', filesStore.length);
+  filesStore.slice(0,3).forEach((f, idx)=>{
+    const li = document.createElement('li');
+    const name = document.createElement('span');
+    name.className='file-name';
+    name.textContent = `${f.name} (${Math.round(f.size/1024)} KB)`;
+    const rm = document.createElement('button');
+    rm.className = 'remove-file';
+    rm.type='button';
+    rm.textContent = t('ui.remove') || 'Remove';
+    rm.addEventListener('click', ()=>{
+      filesStore.splice(idx,1);
+      renderFilesList();
+    });
+    li.appendChild(name); li.appendChild(rm);
+    list.appendChild(li);
+  });
+  if (filesStore.length > 3) {
+    const li = document.createElement('li');
+    li.textContent = `+ ${filesStore.length - 3} more…`
+    list.appendChild(li);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   const input = document.getElementById('files');
   const pickBtn = document.getElementById('btnPickFiles');
@@ -510,9 +545,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (pickBtn && input) {
     pickBtn.addEventListener('click', ()=> input.click());
     input.addEventListener('change', ()=>{
-      const files = Array.from(input.files || []);
-      if (!files.length) { info.textContent = t('ui.files_none'); return; }
-      info.textContent = (t('ui.files_selected') || 'Files selected: {n}').replace('{n}', files.length);
+      const newFiles = Array.from(input.files || []);
+      // merge with dedupe
+      const map = new Map(filesStore.map(f=>[fileKey(f), f]));
+      for (const f of newFiles) map.set(fileKey(f), f);
+      filesStore = Array.from(map.values());
+      // enforce limits client-side (3 files, 5MB each, 15MB total)
+      if (filesStore.length > 3) filesStore = filesStore.slice(0,3);
+      let total=0; filesStore = filesStore.filter(f=>{
+        const okType = ['application/pdf','image/jpeg','image/png'].includes(f.type) || /\.(pdf|jpe?g|png)$/i.test(f.name||'');
+        if (!okType) return false;
+        if (f.size > 5*1024*1024) return false;
+        total += f.size; return total <= 15*1024*1024;
+      });
+      renderFilesList();
+      // clear native input to allow selecting same file again
+      input.value = '';
     });
   }
 });
@@ -539,22 +587,25 @@ f.addEventListener('submit', async (e)=>{
   submitBtn.disabled = true; submitBtn.textContent = t('ui.sending');
 
   try{
+    // формируем FormData сами, чтобы приложить файлы из filesStore
     const fd = new FormData(f);
+    // удалить возможные 'files' из DOM-инпута
+    try { fd.delete('files'); } catch(e){}
+    for (const file of filesStore) fd.append('files', file, file.name);
+
     const tok = document.getElementById('ts-response').value || '';
     if(!tok){ alert(t('msg.captcha')); throw new Error('no token'); }
     fd.set('cf-turnstile-response', tok);
 
-    // validate files on client
-    const fileInput = document.getElementById('files');
-    const files = fileInput ? Array.from(fileInput.files) : [];
-    if (files.length > 3) { alert('Слишком много файлов (макс. 3).'); throw new Error('too_many_files'); }
+    // финальная проверка размеров
+    if (filesStore.length > 3) throw new Error('too_many_files');
     let total = 0;
-    for (const f of files) {
-      const okType = ['application/pdf','image/jpeg'].includes(f.type) || /\.(pdf|jpe?g)$/i.test(f.name||'');
-      if (!okType) { alert('Допустимы только PDF или JPG.'); throw new Error('bad_type'); }
-      if (f.size > 5*1024*1024) { alert('Один из файлов больше 5 МБ.'); throw new Error('too_big'); }
-      total += f.size;
-      if (total > 15*1024*1024) { alert('Суммарный размер вложений больше 15 МБ.'); throw new Error('too_big_total'); }
+    for (const file of filesStore) {
+      const okType = ['application/pdf','image/jpeg','image/png'].includes(file.type) || /\.(pdf|jpe?g|png)$/i.test(file.name||'');
+      if (!okType) throw new Error('bad_type');
+      if (file.size > 5*1024*1024) throw new Error('too_big');
+      total += file.size;
+      if (total > 15*1024*1024) throw new Error('too_big_total');
     }
 
     const res = await fetch(f.action, { method: 'POST', body: fd });

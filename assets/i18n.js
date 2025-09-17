@@ -560,40 +560,7 @@
   }
   function applyContacts(lang){
     var t = T.contacts[lang] || T.contacts.ru;
-    var H1 = qs('body.contacts h1');
-    // --- NEW: attachments i18n (RU/EN/UK) ---
-    try{
-      var A = {
-        ru: {
-          label: 'Вложения (PDF/JPG/PNG, до 5 МБ, до 3 файлов)',
-          btn: 'Вложить файлы',
-          none: 'Файлы не выбраны',
-          hint: 'Допустимые: PDF, JPG, PNG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.'
-        },
-        en: {
-          label: 'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)',
-          btn: 'Attach files',
-          none: 'No files selected',
-          hint: 'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.'
-        },
-        uk: {
-          label: 'Вкладення (PDF/JPG/PNG, до 5 МБ, максимум 3 файли)',
-          btn: 'Додати файли',
-          none: 'Файли не вибрані',
-          hint: 'Дозволено: PDF, JPG, PNG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.'
-        }
-      }[lang] || {
-        label: 'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)',
-        btn: 'Attach files',
-        none: 'No files selected',
-        hint: 'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.'
-      };
-      var lblFiles = qs('#lblFiles'); if (lblFiles) lblFiles.textContent = A.label;
-      var btnPick = qs('#btnPickFiles'); if (btnPick) btnPick.textContent = A.btn;
-      var filesInfo = qs('#filesInfo'); if (filesInfo) filesInfo.textContent = A.none;
-      var hintFiles = qs('#hintFiles'); if (hintFiles) hintFiles.textContent = A.hint;
-    }catch(_e){}
- if (H1) H1.textContent = t.header;
+    var H1 = qs('body.contacts h1'); if (H1) H1.textContent = t.header;
     var lead = qs('body.contacts .card p.muted'); if (lead) lead.textContent = t.lead;
     function L(id, txt){ var el = qs('label[for="'+id+'"]'); if (el) el.textContent = txt; }
     L('name',t.name); L('email',t.email); L('phone',t.phone); L('company',t.company); L('service',t.service); L('deadline',t.deadline); L('message',t.message);
@@ -631,7 +598,39 @@
     var copyBtn = qs('#copyBtn'); if (copyBtn) copyBtn.textContent = t.copy;
     var addrH = qs('body.contacts .contact-strip h3:first-child'); if (addrH) addrH.textContent = t.addrTitle;
     var telH  = qs('body.contacts .contact-strip h3:nth-child(2)'); if (telH) telH.textContent  = t.phoneTitle;
-  }
+  
+    // --- Attachments (files) texts ---
+    try{
+      var ATT = {
+        ru: {
+          lbl: 'Вложения (PDF/JPG/PNG, до 5 МБ, до 3 файлов)',
+          btn: 'Вложить файлы',
+          none: 'Файлы не выбраны',
+          hint: 'Допустимые: PDF, JPG, PNG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.'
+        },
+        en: {
+          lbl: 'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)',
+          btn: 'Attach files',
+          none: 'No files selected',
+          hint: 'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.'
+        },
+        uk: {
+          lbl: 'Вкладення (PDF/JPG/PNG, до 5 МБ, максимум 3 файли)',
+          btn: 'Додати файли',
+          none: 'Файли не вибрані',
+          hint: 'Дозволено: PDF, JPG, PNG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.'
+        }
+      };
+      var a = ATT[lang] || ATT.ru;
+      var lblFiles = qs('#lblFiles'); if (lblFiles) lblFiles.textContent = a.lbl;
+      var btnPick = qs('#btnPickFiles'); if (btnPick) btnPick.textContent = a.btn;
+      var filesInfo = qs('#filesInfo');
+      if (filesInfo && ([''+ATT.ru.none, ''+ATT.en.none, ''+ATT.uk.none].indexOf(filesInfo.textContent)>=0)) {
+        filesInfo.textContent = a.none;
+      }
+      var hint = qs('#hintFiles'); if (hint) hint.textContent = a.hint;
+    }catch(e){}
+}
   function replaceCardHTML(lang, key){
   var card = qs('main .card'); 
   if (!card) return;

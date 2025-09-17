@@ -104,14 +104,14 @@ async function sendMail(env, { name, email, message, phone="", company="", servi
 
   let attachments = [];
   if (uploadedFiles && uploadedFiles.length) {
-    const allowed = new Set(['application/pdf','image/jpeg']);
+    const allowed = new Set(['application/pdf','image/jpeg','image/png']);
     let total = 0;
     attachments = await Promise.all(
       uploadedFiles.slice(0,3).map(async (file) => {
         const type = file.type || 'application/octet-stream';
         const size = file.size || 0;
         const nameSafe = sanitizeFilename(file.name || 'file');
-        if (!allowed.has(type) && !/\.(pdf|jpe?g)$/i.test(nameSafe)) {
+        if (!allowed.has(type) && !/\.(pdf|jpe?g|png)$/i.test(nameSafe)) {
           throw new Error('bad_type');
         }
         if (size > 5 * 1024 * 1024) { throw new Error('too_big'); }

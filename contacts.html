@@ -39,6 +39,10 @@ button.btn, .btn{
 /* honeypot (антиспам) */
 .hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
 
+/* uploader */
+.file-uploader{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#filesInfo{min-height:1em}
+
 /* Нижняя «подушка» под sticky-footer */
 main{ padding-bottom: 120px; }
 
@@ -150,8 +154,12 @@ main{ padding-bottom: 120px; }
 
       <!-- Вложения -->
       <div style="grid-column:1/-1">
-        <label for="files" id="lblFiles" data-i18n="labels.attach">Вложения (PDF/JPG, до 5 МБ, до 3 файлов)</label>
-        <input id="files" name="files" type="file" accept=".pdf,.jpg,.jpeg" multiple>
+        <label id="lblFiles" data-i18n="labels.attach">Вложения (PDF/JPG, до 5 МБ, до 3 файлов)</label>
+        <div class="file-uploader">
+          <input id="files" name="files" type="file" accept=".pdf,.jpg,.jpeg" multiple hidden>
+          <button type="button" class="btn" id="btnPickFiles" data-i18n="ui.attach_btn">Вложить файлы</button>
+          <span class="small" id="filesInfo" data-i18n="ui.files_none">Файлы не выбраны</span>
+        </div>
         <p class="small" id="hintFiles" data-i18n="hint_attach">Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ.</p>
       </div>
 
@@ -253,7 +261,7 @@ main{ padding-bottom: 120px; }
 <script>
 // ===== Turnstile (explicit) — ключи
 const SITEKEY_PAGES = '0x4AAAAAABzuSh1PhYJkUsxg'; // allowlist: neweee-pages.pages.dev
-const SITEKEY_PROD  = '0x4AAAAAABzukrBYa83MJypa';  // allowlist: ne​weee.com, www.ne​weee.com
+const SITEKEY_PROD  = '0x4AAAAAABzukrBYa83MJypa';  // allowlist: neweee.com, www.neweee.com
 function pickSiteKey() {
   const h = location.hostname;
   if (h.endsWith('neweee-pages.pages.dev')) return SITEKEY_PAGES;
@@ -286,9 +294,7 @@ function tsReady(){
 }
 window.tsReady = tsReady;
 
-// ===== i18n =====
-
-// Нормализуем язык к 'ru' | 'en' | 'uk'
+// ===== i18n helpers & dict =====
 function normalizeLang(v) {
   v = (v || '').toString().toLowerCase();
   if (v === 'ua' || v.startsWith('uk')) return 'uk';
@@ -302,7 +308,6 @@ function getLang() {
   if (!v) v = document.documentElement.lang || navigator.language || 'ru';
   return normalizeLang(v);
 }
-// Глобальный setter, если не задан твоим общим скриптом
 if (typeof window.setLang !== 'function') {
   window.setLang = function (code) {
     const lang = normalizeLang(code);
@@ -331,7 +336,10 @@ const I18N = {
       deadline: 'Напр., до 30.09 или 4–6 недель',
       message: '1–2 абзаца: текущая ситуация, ограничения, желаемый результат'
     },
-    ui: { send: 'Отправить', sending: 'Отправка…', pubs: 'Публикации', copy: 'Скопировать', copied: 'Скопировано ✓' },
+    ui: {
+      send: 'Отправить', sending: 'Отправка…', pubs: 'Публикации', copy: 'Скопировать', copied: 'Скопировано ✓',
+      attach_btn: 'Вложить файлы', files_none: 'Файлы не выбраны', files_selected: 'Выбрано файлов: {n}'
+    },
     msg: {
       required: 'Пожалуйста, заполните обязательные поля.',
       captcha: 'Подтвердите проверку «Я не робот».',
@@ -340,7 +348,6 @@ const I18N = {
     },
     success: { title: 'Спасибо!', text: 'Мы получили вашу заявку и свяжемся с вами в ближайшее время.' },
 
-    /* Адреса */
     addr: {
       reg_title: 'Адрес регистрации:',
       reg_text:
@@ -370,7 +377,10 @@ const I18N = {
       deadline: 'e.g., by 30 Sep or 4–6 weeks',
       message: '1–2 paragraphs: current situation, constraints, desired outcome'
     },
-    ui: { send: 'Send', sending: 'Sending…', pubs: 'Publications', copy: 'Copy', copied: 'Copied ✓' },
+    ui: {
+      send: 'Send', sending: 'Sending…', pubs: 'Publications', copy: 'Copy', copied: 'Copied ✓',
+      attach_btn: 'Attach files', files_none: 'No files selected', files_selected: 'Files selected: {n}'
+    },
     msg: {
       required: 'Please fill in the required fields.',
       captcha: 'Please complete the “I’m not a robot” check.',
@@ -408,7 +418,10 @@ const I18N = {
       deadline: 'наприклад, до 30.09 або 4–6 тижнів',
       message: '1–2 абзаци: поточна ситуація, обмеження, бажаний результат'
     },
-    ui: { send: 'Надіслати', sending: 'Надсилання…', pubs: 'Публікації', copy: 'Скопіювати', copied: 'Скопійовано ✓' },
+    ui: {
+      send: 'Надіслати', sending: 'Надсилання…', pubs: 'Публікації', copy: 'Скопіювати', copied: 'Скопійовано ✓',
+      attach_btn: 'Додати файли', files_none: 'Файли не вибрані', files_selected: 'Вибрано файлів: {n}'
+    },
     msg: {
       required: 'Будь ласка, заповніть обов’язкові поля.',
       captcha: 'Підтвердіть перевірку «Я не робот».',
@@ -431,77 +444,77 @@ const I18N = {
   }
 };
 
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+function t(path) {
+  const lang = getLang();
+  const segs = path.split('.');
+  let obj = I18N[lang] || I18N.ru;
+  for (const s of segs) { obj = obj?.[s]; if (!obj) break; }
+  return (typeof obj === 'string') ? obj : '';
+}
 
 function applyLangUI() {
   const lang = getLang();
   document.documentElement.lang = lang;
 
-  // Навигация/заголовки/подписи
-  const $ = (id)=>document.getElementById(id);
-  if ($('backHome')) $('backHome').textContent = t('nav.back');
-  if ($('pageTitle')) $('pageTitle').textContent = t('nav.title');
-  if ($('h1')) $('h1').textContent = t('head.h1');
-  if ($('lead')) $('lead').textContent = t('head.lead');
+  const $id = (id)=>document.getElementById(id);
+  if ($id('backHome')) $id('backHome').textContent = t('nav.back');
+  if ($id('pageTitle')) $id('pageTitle').textContent = t('nav.title');
+  if ($id('h1')) $id('h1').textContent = t('head.h1');
+  if ($id('lead')) $id('lead').textContent = t('head.lead');
 
-  // Метки формы + опции
-  if ($('lblName')) $('lblName').textContent = t('labels.name');
-  if ($('lblEmail')) $('lblEmail').textContent = t('labels.email');
-  if ($('lblPhone')) $('lblPhone').textContent = t('labels.phone');
-  if ($('lblCompany')) $('lblCompany').textContent = t('labels.company');
-  if ($('lblService')) $('lblService').textContent = t('labels.service');
-  if ($('lblDeadline')) $('lblDeadline').textContent = t('labels.deadline');
-  if ($('lblMessage')) $('lblMessage').textContent = t('labels.message');
-  if ($('lblFiles')) $('lblFiles').textContent = t('labels.attach');
-  if ($('hintFiles')) $('hintFiles').textContent = t('hint_attach');
+  if ($id('lblName')) $id('lblName').textContent = t('labels.name');
+  if ($id('lblEmail')) $id('lblEmail').textContent = t('labels.email');
+  if ($id('lblPhone')) $id('lblPhone').textContent = t('labels.phone');
+  if ($id('lblCompany')) $id('lblCompany').textContent = t('labels.company');
+  if ($id('lblService')) $id('lblService').textContent = t('labels.service');
+  if ($id('lblDeadline')) $id('lblDeadline').textContent = t('labels.deadline');
+  if ($id('lblMessage')) $id('lblMessage').textContent = t('labels.message');
+  if ($id('lblFiles')) $id('lblFiles').textContent = t('labels.attach');
+  if ($id('hintFiles')) $id('hintFiles').textContent = t('hint_attach');
+  if ($id('btnPickFiles')) $id('btnPickFiles').textContent = t('ui.attach_btn');
+  if ($id('filesInfo')) $id('filesInfo').textContent = t('ui.files_none');
 
-  if ($('optChoose')) $('optChoose').textContent = t('labels.choose');
-  if ($('optEnergy')) $('optEnergy').textContent = t('labels.energy');
-  if ($('optFSA')) $('optFSA').textContent = t('labels.fsa');
-  if ($('optLab')) $('optLab').textContent = t('labels.lab');
+  if ($id('optChoose')) $id('optChoose').textContent = t('labels.choose');
+  if ($id('optEnergy')) $id('optEnergy').textContent = t('labels.energy');
+  if ($id('optFSA')) $id('optFSA').textContent = t('labels.fsa');
+  if ($id('optLab')) $id('optLab').textContent = t('labels.lab');
 
-  // Плейсхолдеры
-  const setPh = (id, key) => { const el = $(id); if (el) el.placeholder = t('ph.'+key); };
-  setPh('name', 'name');
-  setPh('email', 'email');
-  setPh('phone', 'phone');
-  setPh('company', 'company');
-  setPh('deadline', 'deadline');
-  setPh('message', 'message');
+  const setPh = (id, key) => { const el = $id(id); if (el) el.placeholder = t('ph.'+key); };
+  setPh('name', 'name'); setPh('email', 'email'); setPh('phone', 'phone');
+  setPh('company', 'company'); setPh('deadline', 'deadline'); setPh('message', 'message');
 
-  // Кнопки
-  const submitBtn = $('submitBtn');
-  if (submitBtn) submitBtn.textContent = t('ui.send');
-  const btnPubs = $('btnPubs');
-  if (btnPubs) btnPubs.textContent = t('ui.pubs');
-  const copyBtn = $('copyBtn');
-  if (copyBtn) copyBtn.textContent = t('ui.copy');
+  const submitBtn = $id('submitBtn'); if (submitBtn) submitBtn.textContent = t('ui.send');
+  const btnPubs = $id('btnPubs'); if (btnPubs) btnPubs.textContent = t('ui.pubs');
+  const copyBtn = $id('copyBtn'); if (copyBtn) copyBtn.textContent = t('ui.copy');
 
-  // Адресные блоки (заголовки + тексты)
-  if ($('regAddrTitle')) $('regAddrTitle').textContent = t('addr.reg_title');
-  if ($('mailAddrTitle')) $('mailAddrTitle').textContent = t('addr.mail_title');
-  if ($('regAddrText')) $('regAddrText').innerHTML = t('addr.reg_text');
-  if ($('mailAddrText')) $('mailAddrText').innerHTML = t('addr.mail_text');
+  if ($id('regAddrTitle')) $id('regAddrTitle').textContent = t('addr.reg_title');
+  if ($id('mailAddrTitle')) $id('mailAddrTitle').textContent = t('addr.mail_title');
+  if ($id('regAddrText')) $id('regAddrText').innerHTML = t('addr.reg_text');
+  if ($id('mailAddrText')) $id('mailAddrText').innerHTML = t('addr.mail_text');
 
-  // Перевод подсказки во fallback, если открыт
-  const fb = $('fallback'), note = $('fbNote');
+  const fb = $id('fallback'), note = $id('fbNote');
   if (fb && note) {
     const mail = (note.querySelector('a')?.outerHTML) || 'office@neweee.com';
     note.innerHTML = `${t('fallbackNote')} ${mail}.`;
   }
 }
 
-// Реакция на общий переключатель
 window.addEventListener('langchange', applyLangUI);
 document.addEventListener('DOMContentLoaded', applyLangUI);
 
-// Быстрый хэндлер для кнопок с data-set-lang (если есть в шаблоне)
-document.addEventListener('click', (e)=>{
-  const el = e.target.closest('[data-set-lang]');
-  if (!el) return;
-  const lang = el.getAttribute('data-set-lang');
-  if (lang) window.setLang(lang);
+// Выбор файлов
+document.addEventListener('DOMContentLoaded', ()=>{
+  const input = document.getElementById('files');
+  const pickBtn = document.getElementById('btnPickFiles');
+  const info = document.getElementById('filesInfo');
+  if (pickBtn && input) {
+    pickBtn.addEventListener('click', ()=> input.click());
+    input.addEventListener('change', ()=>{
+      const files = Array.from(input.files || []);
+      if (!files.length) { info.textContent = t('ui.files_none'); return; }
+      info.textContent = (t('ui.files_selected') || 'Files selected: {n}').replace('{n}', files.length);
+    });
+  }
 });
 
 // ===== Отправка формы: multipart/form-data на /contact =====
@@ -544,20 +557,17 @@ f.addEventListener('submit', async (e)=>{
       if (total > 10*1024*1024) { alert('Суммарный размер вложений больше 10 МБ.'); throw new Error('too_big_total'); }
     }
 
-    const res = await fetch(f.action, {
-      method: 'POST',
-      body: fd
-    });
+    const res = await fetch(f.action, { method: 'POST', body: fd });
     const json = await res.json().catch(()=> ({}));
 
     if(res.ok && json && json.ok){
       const title = t('success.title'), text = t('success.text');
       f.innerHTML = `<h2>${title}</h2><p class="muted">${text}</p>`;
+      f.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }else{
       throw new Error(json && (json.error || json.text) || ('status '+res.status));
     }
   }catch(err){
-    // Fallback — собрать письмо
     const lines = [
       `${t('labels.name').replace(' *','')}: ${val('name')}`,
       `${t('labels.email').replace(' *','')}: ${val('email')}`,
@@ -571,10 +581,12 @@ f.addEventListener('submit', async (e)=>{
     ].filter(Boolean);
     fbText.value = lines.join('\r\n');
     fb.style.display = 'block';
+    fb.scrollIntoView({ behavior: 'smooth', block: 'start' });
     alert(t('msg.fallbackAlert'));
   }finally{
     if(window.turnstile && widgetId!==null) turnstile.reset(widgetId);
-    submitBtn.disabled = true; submitBtn.textContent = t('ui.send');
+    const submitBtn2 = document.getElementById('submitBtn');
+    if (submitBtn2) { submitBtn2.disabled = false; submitBtn2.textContent = t('ui.send'); }
   }
 });
 

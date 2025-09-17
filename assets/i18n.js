@@ -559,74 +559,79 @@
     fill(1,'a1h','a1p'); fill(2,'a2h','a2p'); fill(3,'a3h','a3p');
   }
   function applyContacts(lang){
-  var t = T.contacts[lang] || T.contacts.ru;
+    var t = T.contacts[lang] || T.contacts.ru;
+    var H1 = qs('body.contacts h1');
+    // --- NEW: attachments i18n (RU/EN/UK) ---
+    try{
+      var A = {
+        ru: {
+          label: 'Вложения (PDF/JPG/PNG, до 5 МБ, до 3 файлов)',
+          btn: 'Вложить файлы',
+          none: 'Файлы не выбраны',
+          hint: 'Допустимые: PDF, JPG, PNG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.'
+        },
+        en: {
+          label: 'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)',
+          btn: 'Attach files',
+          none: 'No files selected',
+          hint: 'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.'
+        },
+        uk: {
+          label: 'Вкладення (PDF/JPG/PNG, до 5 МБ, максимум 3 файли)',
+          btn: 'Додати файли',
+          none: 'Файли не вибрані',
+          hint: 'Дозволено: PDF, JPG, PNG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.'
+        }
+      }[lang] || {
+        label: 'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)',
+        btn: 'Attach files',
+        none: 'No files selected',
+        hint: 'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.'
+      };
+      var lblFiles = qs('#lblFiles'); if (lblFiles) lblFiles.textContent = A.label;
+      var btnPick = qs('#btnPickFiles'); if (btnPick) btnPick.textContent = A.btn;
+      var filesInfo = qs('#filesInfo'); if (filesInfo) filesInfo.textContent = A.none;
+      var hintFiles = qs('#hintFiles'); if (hintFiles) hintFiles.textContent = A.hint;
+    }catch(_e){}
+ if (H1) H1.textContent = t.header;
+    var lead = qs('body.contacts .card p.muted'); if (lead) lead.textContent = t.lead;
+    function L(id, txt){ var el = qs('label[for="'+id+'"]'); if (el) el.textContent = txt; }
+    L('name',t.name); L('email',t.email); L('phone',t.phone); L('company',t.company); L('service',t.service); L('deadline',t.deadline); L('message',t.message);
+    var sel = qs('#service'); if (sel){
+      var opts = qsa('option', sel);
+      if (opts[0]) opts[0].textContent = t.selectPlaceholder;
+      if (opts[1]) opts[1].textContent = t.sEnergy;
+      if (opts[2]) opts[2].textContent = t.sFSA;
+      if (opts[3]) opts[3].textContent = t.sLab;
+   
+      var h3s = qsa('body.contacts .contact-strip h3');
+      if (h3s[0]) h3s[0].textContent = t.addrTitle;
+      if (h3s[1]) h3s[1].textContent = t.phoneTitle;
 
-  // Верх страницы
-  var H1   = qs('body.contacts h1');                      if (H1)   H1.textContent   = t.header;
-  var lead = qs('body.contacts .card p.muted');           if (lead) lead.textContent = t.lead;
-
-  // Метки формы
-  function L(id, txt){ var el = qs('label[for="'+id+'"]'); if (el) el.textContent = txt; }
-  L('name',t.name); L('email',t.email); L('phone',t.phone);
-  L('company',t.company); L('service',t.service); L('deadline',t.deadline); L('message',t.message);
-
-  // Селект + mailto-фолбек (как было)
-  var sel = qs('#service');
-  if (sel){
-    var opts = qsa('option', sel);
-    if (opts[0]) opts[0].textContent = t.selectPlaceholder;
-    if (opts[1]) opts[1].textContent = t.sEnergy;
-    if (opts[2]) opts[2].textContent = t.sFSA;
-    if (opts[3]) opts[3].textContent = t.sLab;
-
-    var form = qs('#briefForm');
-    if (form && /^mailto:/i.test(form.getAttribute('action')||'')) {
-      var subjMap = { ru:'NE&E: бриф с сайта', en:'NE&E: website brief', uk:'NE&E: бриф з сайту' };
-      var subj = encodeURIComponent(subjMap[lang] || 'NE&E Brief');
-      form.setAttribute('action', 'mailto:office@neweee.com?subject=' + subj);
-    }
-  }
-
-  // Плейсхолдеры/кнопки/подписи (как было)
-  function PH(id,val){ var el=qs('#'+id); if(el) el.setAttribute('placeholder', val); }
-  PH('name',t.placeholders.name); PH('email',t.placeholders.email); PH('phone',t.placeholders.phone);
-  PH('company',t.placeholders.company); PH('deadline',t.placeholders.deadline); PH('message',t.placeholders.message);
-  var hp = qs('#website'); if(hp) hp.setAttribute('placeholder', t.hp);
-  var sub  = qs('#briefForm .actions .btn[type="submit"]');         if (sub)  sub.textContent  = t.submit;
-  var pubs = qs('#briefForm .actions a.btn[href="publications.html"]'); if (pubs) pubs.textContent = t.pubs;
-  var smalls = qsa('body.contacts .small'); if (smalls[0]) smalls[0].textContent = t.note;
-  var fb = qs('#fallback .small'); if (fb) fb.textContent = t.fallbackNote;
-  var copyBtn = qs('#copyBtn'); if (copyBtn) copyBtn.textContent = t.copy;
-
-  // --- Новое: если на странице есть ID заголовков адресов — правим ТОЛЬКО их ---
-  var regH  = qs('#regAddrTitle');
-  var mailH = qs('#mailAddrTitle');
-  if (regH || mailH){
-    var TITLES = {
-      ru: { reg:'Адрес регистрации',  mail:'Почтовый адрес' },
-      en: { reg:'Registered address', mail:'Mailing address' },
-      uk: { reg:'Адреса реєстрації',  mail:'Поштова адреса' }
-    };
-    var TT = TITLES[(lang||'ru').toLowerCase()] || TITLES.ru;
-    if (regH)  regH.textContent  = TT.reg;
-    if (mailH) mailH.textContent = TT.mail;
-
-    // Добавляем «воздух» снизу у почтового адреса
-    var mailText = qs('#mailAddrText');
-    if (mailText && !/<br>\s*$/i.test(mailText.innerHTML)) {
-      mailText.innerHTML = (mailText.innerHTML || '').trim() + '<br>';
-    }
-
-  } else {
-    // --- Fallback для старой вёрстки БЕЗ ID (оставляем твою прежнюю логику) ---
-    var h3s = qsa('body.contacts .contact-strip h3');
-    if (h3s[0]) h3s[0].textContent = t.addrTitle;
-    if (h3s[1]) h3s[1].textContent = t.phoneTitle;
-
-    var addrH = qs('body.contacts .contact-strip h3:first-child'); if (addrH) addrH.textContent = t.addrTitle;
-    var telH  = qs('body.contacts .contact-strip h3:nth-child(2)'); if (telH)  telH.textContent  = t.phoneTitle;
-  }
+     var form = qs('#briefForm');
+     if (form && /^mailto:/i.test(form.getAttribute('action')||'')) {
+     var subjMap = {
+     ru: 'NE&E: бриф с сайта',
+     en: 'NE&E: website brief',
+     uk: 'NE&E: бриф з сайту'
+  };
+ 
+  var subj = encodeURIComponent(subjMap[lang] || 'NE&E Brief');
+  form.setAttribute('action', 'mailto:office@neweee.com?subject=' + subj);
 }
+
+    }
+    function PH(id,val){ var el=qs('#'+id); if(el) el.setAttribute('placeholder', val); }
+    PH('name',t.placeholders.name); PH('email',t.placeholders.email); PH('phone',t.placeholders.phone); PH('company',t.placeholders.company); PH('deadline',t.placeholders.deadline); PH('message',t.placeholders.message);
+    var hp = qs('#website'); if(hp) hp.setAttribute('placeholder', t.hp);
+    var sub = qs('#briefForm .actions .btn[type="submit"]'); if (sub) sub.textContent = t.submit;
+    var pubs = qs('#briefForm .actions a.btn[href="publications.html"]'); if (pubs) pubs.textContent = t.pubs;
+    var smalls = qsa('body.contacts .small'); if (smalls[0]) smalls[0].textContent = t.note;
+    var fb = qs('#fallback .small'); if (fb) fb.textContent = t.fallbackNote;
+    var copyBtn = qs('#copyBtn'); if (copyBtn) copyBtn.textContent = t.copy;
+    var addrH = qs('body.contacts .contact-strip h3:first-child'); if (addrH) addrH.textContent = t.addrTitle;
+    var telH  = qs('body.contacts .contact-strip h3:nth-child(2)'); if (telH) telH.textContent  = t.phoneTitle;
+  }
   function replaceCardHTML(lang, key){
   var card = qs('main .card'); 
   if (!card) return;

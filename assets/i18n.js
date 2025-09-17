@@ -593,34 +593,31 @@
     var hp = qs('#website'); if(hp) hp.setAttribute('placeholder', t.hp);
     var sub = qs('#briefForm .actions .btn[type="submit"]'); if (sub) sub.textContent = t.submit;
     var pubs = qs('#briefForm .actions a.btn[href="publications.html"]'); if (pubs) pubs.textContent = t.pubs;
-    var smalls = qsa('body.contacts .small'); if (smalls[0]) smalls[0].textContent = t.note;
+    var smalls = qsa('body.contacts .small'); smalls.forEach(function(el){ if (el && el.id !== 'filesInfo' && el.id !== 'hintFiles' && !el.closest('#fallback')) { el.textContent = t.note; } });
     var fb = qs('#fallback .small'); if (fb) fb.textContent = t.fallbackNote;
     var copyBtn = qs('#copyBtn'); if (copyBtn) copyBtn.textContent = t.copy;
     var addrH = qs('body.contacts .contact-strip h3:first-child'); if (addrH) addrH.textContent = t.addrTitle;
     var telH  = qs('body.contacts .contact-strip h3:nth-child(2)'); if (telH) telH.textContent  = t.phoneTitle;
   
-  // === PATCH: translate attachments UI reliably using page dictionary, and avoid overwriting file list ===
-  try {
-    var tPage = (typeof window.t === 'function') ? window.t : null;
-    if (tPage) {
-      var elLbl = document.getElementById('lblFiles');
-      if (elLbl) elLbl.textContent = tPage('labels.attach');
-
-      var elBtn = document.getElementById('btnPickFiles');
-      if (elBtn) elBtn.textContent = tPage('ui.attach_btn');
-
-      var elHint = document.getElementById('hintFiles');
-      if (elHint) elHint.textContent = tPage('hint_attach');
-
-      var filesList = document.getElementById('filesList');
-      var elInfo = document.getElementById('filesInfo');
-      var hasListItems = filesList && filesList.children && filesList.children.length > 0;
-      // Update placeholder text only if user hasn't selected files (so we don't clobber the live list)
-      if (elInfo && !hasListItems) {
-        elInfo.textContent = tPage('ui.files_none');
+    // --- Attachments i18n (lblFiles, btnPickFiles, filesInfo, hintFiles) ---
+    (function(){
+      var Amap = {
+        ru: { label:'Вложения (PDF/JPG/PNG, до 5 МБ, до 3 файлов)', btn:'Вложить файлы', none:'Файлы не выбраны', hint:'Допустимые: PDF, JPG, PNG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.' },
+        en: { label:'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)', btn:'Attach files', none:'No files selected', hint:'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.' },
+        uk: { label:'Вкладення (PDF/JPG/PNG, до 5 МБ, максимум 3 файли)', btn:'Додати файли', none:'Файли не вибрані', hint:'Дозволено: PDF, JPG, PNG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.' }
+      };
+      var A = Amap[lang] || Amap.ru;
+      var elLbl = qs('#lblFiles'); if (elLbl) elLbl.textContent = A.label;
+      var elBtn = qs('#btnPickFiles'); if (elBtn) elBtn.textContent = A.btn;
+      var elHint = qs('#hintFiles'); if (elHint) elHint.textContent = A.hint;
+      var elInfo = qs('#filesInfo');
+      if (elInfo) {
+        var list = qs('#filesList');
+        var hasItems = list && list.children && list.children.length > 0;
+        if (!hasItems) elInfo.textContent = A.none;
       }
-    }
-  } catch (e) { /* no-op */ }
+    })();
+
 }
   function replaceCardHTML(lang, key){
   var card = qs('main .card'); 

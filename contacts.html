@@ -107,7 +107,8 @@ main{ padding-bottom: 120px; }
     <h1 id="h1">Связаться с нами</h1>
     <p class="muted" id="lead">Опишите задачу — мы предложим варианты решения и свяжемся с вами.</p>
 
-    <form id="briefForm" action="/contact" method="post" novalidate>
+    <!-- enctype добавлен для файлов -->
+    <form id="briefForm" action="/contact" method="post" enctype="multipart/form-data" novalidate>
       <div class="form-grid">
         <div>
           <label for="name" id="lblName">Ваше имя *</label>
@@ -147,6 +148,13 @@ main{ padding-bottom: 120px; }
         <input class="hp" type="text" id="website" name="website" tabindex="-1" autocomplete="off" placeholder="Оставьте пустым">
       </div>
 
+      <!-- Вложения -->
+      <div style="grid-column:1/-1">
+        <label for="files" id="lblFiles" data-i18n="labels.attach">Вложения (PDF/JPG, до 5 МБ, до 3 файлов)</label>
+        <input id="files" name="files" type="file" accept=".pdf,.jpg,.jpeg" multiple>
+        <p class="small" id="hintFiles" data-i18n="hint_attach">Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ.</p>
+      </div>
+
       <!-- Turnstile -->
       <input type="hidden" name="cf-turnstile-response" id="ts-response">
       <div class="actions">
@@ -170,100 +178,82 @@ main{ padding-bottom: 120px; }
   </section>
 
   <!-- НИЖНИЙ СТРИП (2 адреса, у каждого справа телефон и e-mail) -->
-  
-<section class="contact-strip">
-  <div class="grid">
+  <section class="contact-strip">
+    <div class="grid">
 
-    <!-- Регистрационный адрес -->
-    <div>
-      <h3 id="regAddrTitle">Адрес регистрации</h3>
-      <address id="regAddrText" style="margin:0">
-        NEW ENERGY AND ENGINEERING LTD<br>
-        Office No. 416, Burlington Tower, Business Bay, Dubai<br>
-        P.O. Box 487644, United Arab Emirates<br>
-        ICC20211393
-      </address>
-    </div>
-    <div class="right">
-      <p>
-        <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.7 19.7 0 0 1 3.1 5.18 2 2 0 0 1 5.06 3h3a2 2 0 0 1 2 1.72c.1.74.27 1.46.5 2.15a2 2 0 0 1-.45 2.11L9 10a16 16 0 0 0 5 5l1-1.11a2 2 0 0 1 2.11-.45c.69.23 1.41.4 2.15.5A2 2 0 0 1 22 16.92z"/>
-          </svg>
-        </span>
-        <a href="tel:+420607828092">+420 607 828 092</a>
-      </p>
-      <p>
-        <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
-            <path d="M3 7l9 6 9-6"></path>
-          </svg>
-        </span>
-        <a href="mailto:office@neweee.com">office@neweee.com</a>
-      </p>
-    </div>
+      <!-- Регистрационный адрес -->
+      <div>
+        <h3 id="regAddrTitle">Адрес регистрации:</h3>
+        <address id="regAddrText">
+          NEW ENERGY AND ENGINEERING LTD<br>
+          Office No. 416, Burlington Tower, Business Bay, Dubai<br>
+          P.O. Box 487644, United Arab Emirates<br>
+          ICC20211393
+        </address>
+      </div>
+      <div class="right">
+        <p>
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.7 19.7 0 0 1 3.1 5.18 2 2 0 0 1 5.06 3h3a2 2 0 0 1 2 1.72c.1.74.27 1.46.5 2.15a2 2 0 0 1-.45 2.11L9 10a16 16 0 0 0 5 5l1-1.11a2 2 0 0 1 2.11-.45c.69.23 1.41.4 2.15.5A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </span>
+          <a href="tel:+420607828092">+420 607 828 092</a>
+        </p>
+        <p>
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+              <path d="m22 6-10 7L2 6"/>
+            </svg>
+          </span>
+          <a href="mailto:office@neweee.com">office@neweee.com</a>
+        </p>
+      </div>
 
-    <div class="divider" aria-hidden="true"></div>
+      <!-- Разделитель -->
+      <div class="divider" aria-hidden="true"></div>
 
-    <!-- Почтовый адрес -->
-    <div>
-      <h3 id="mailAddrTitle">Почтовый адрес</h3>
-      <address id="mailAddrText" style="margin:0">
-        Kovarova 2240/2<br>
-        591 01, Zdar nad Sazavou<br>
-        Czech Republic<br>
-        <!-- пустая строка для «воздуха» у нижнего края -->
-        <br>
-      </address>
-    </div>
-    <div class="right">
-      <p>
-        <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.7 19.7 0 0 1 3.1 5.18 2 2 0 0 1 5.06 3h3a2 2 0 0 1 2 1.72c.1.74.27 1.46.5 2.15a2 2 0 0 1-.45 2.11L9 10a16 16 0 0 0 5 5l1-1.11a2 2 0 0 1 2.11-.45c.69.23 1.41.4 2.15.5A2 2 0 0 1 22 16.92z"/>
-          </svg>
-        </span>
-        <a href="tel:+420607828092">+420 607 828 092</a>
-      </p>
-      <p>
-        <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
-            <path d="M3 7l9 6 9-6"></path>
-          </svg>
-        </span>
-        <a href="mailto:office@neweee.com">office@neweee.com</a>
-      </p>
-    </div>
+      <!-- Почтовый адрес -->
+      <div>
+        <h3 id="mailAddrTitle">Почтовый адрес:</h3>
+        <address id="mailAddrText">
+          Kovarova 2240/2<br>
+          591 01, Zdar nad Sazavou<br>
+          Czech Republic<br>
+          <br>
+        </address>
+      </div>
+      <div class="right">
+        <p>
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.7 19.7 0 0 1 3.1 5.18 2 2 0 0 1 5.06 3h3a2 2 0 0 1 2 1.72c.1.74.27 1.46.5 2.15a2 2 0 0 1-.45 2.11L9 10a16 16 0 0 0 5 5l1-1.11a2 2 0 0 1 2.11-.45c.69.23 1.41.4 2.15.5A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </span>
+          <a href="tel:+420607828092">+420 607 828 092</a>
+        </p>
+        <p>
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+              <path d="m22 6-10 7L2 6"/>
+            </svg>
+          </span>
+          <a href="mailto:office@neweee.com">office@neweee.com</a>
+        </p>
+      </div>
 
-  </div>
-</section>
-<script>
-(function(){
-  const FIX = {
-    '#regAddrTitle': 'Адрес регистрации',
-    '#mailAddrTitle': 'Почтовый адрес'
-  };
-  function lock() {
-    for (const s in FIX) {
-      const el = document.querySelector(s);
-      if (el && el.textContent.trim() !== FIX[s]) el.textContent = FIX[s];
-    }
-  }
-  document.addEventListener('DOMContentLoaded', lock);
-  window.addEventListener('langchange', lock); // если у тебя есть переключатель языков
-})();
-</script>
-  
+    </div>
+  </section>
 </main>
 
 <footer class="site-footer">© 2025 NEW ENERGY &amp; ENGINEERING LTD</footer>
 
 <script>
 // ===== Turnstile (explicit) — ключи
-const SITEKEY_PAGES = '0x4AAAAAABzuSh1PhYJkUsxgHz'; // allowlist: neweee-pages.pages.dev
-const SITEKEY_PROD  = '0x4AAAAAABzukrBYa83MJypa3XK';  // allowlist: ne​weee.com, www.ne​weee.com
+const SITEKEY_PAGES = '0x4AAAAAABzuSh1PhYJkUsxg'; // allowlist: neweee-pages.pages.dev
+const SITEKEY_PROD  = '0x4AAAAAABzukrBYa83MJypa';  // allowlist: ne​weee.com, www.ne​weee.com
 function pickSiteKey() {
   const h = location.hostname;
   if (h.endsWith('neweee-pages.pages.dev')) return SITEKEY_PAGES;
@@ -324,13 +314,14 @@ if (typeof window.setLang !== 'function') {
 }
 
 const I18N = {
-  ru: {
+  ru:{
     nav: { back: '← На главную', title: 'Контакты' },
     head: { h1: 'Связаться с нами', lead: 'Опишите задачу — мы предложим варианты решения и свяжемся с вами.' },
     labels: {
       name: 'Ваше имя *', email: 'Email *', phone: 'Телефон / WhatsApp', company: 'Компания',
       service: 'Направление *', deadline: 'Срок / дедлайн', message: 'Краткое описание задачи *',
-      choose: 'Выберите…', energy: 'Энергетический инжиниринг', fsa: 'ФСА / ТРИЗ', lab: 'Лабораторные исследования'
+      choose: 'Выберите…', energy: 'Энергетический инжиниринг', fsa: 'ФСА / ТРИЗ', lab: 'Лабораторные исследования',
+      attach: 'Вложения (PDF/JPG, до 5 МБ, до 3 файлов)'
     },
     ph: {
       name: 'Иван Иванов',
@@ -354,20 +345,22 @@ const I18N = {
       reg_title: 'Адрес регистрации:',
       reg_text:
         'NEW ENERGY AND ENGINEERING LTD<br>Office No. 416, Burlington Tower, Business Bay, Dubai<br>P.O. Box 487644, United Arab Emirates<br>ICC20211393',
-      mail_title: 'Адрес почтовый:',
+      mail_title: 'Почтовый адрес:',
       mail_text:
-        'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic<br><br>' /* добавили пустую строку */
+        'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
+    hint_attach: 'Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ.',
     fallbackNote: 'Если автоматическая отправка не прошла, скопируйте текст ниже и отправьте вручную на'
   },
-  en: {
+  en:{
     nav: { back: '← Home', title: 'Contacts' },
     head: { h1: 'Get in touch', lead: 'Describe your task — we’ll propose solutions and get back to you.' },
     labels: {
       name: 'Your name *', email: 'Email *', phone: 'Phone / WhatsApp', company: 'Company',
       service: 'Service *', deadline: 'Deadline', message: 'Short brief *',
-      choose: 'Choose…', energy: 'Energy engineering', fsa: 'FCA / TRIZ', lab: 'Laboratory research'
+      choose: 'Choose…', energy: 'Energy engineering', fsa: 'FCA / TRIZ', lab: 'Laboratory research',
+      attach: 'Attachments (PDF/JPG, up to 5 MB, max 3 files)'
     },
     ph: {
       name: 'John Smith',
@@ -392,21 +385,23 @@ const I18N = {
         'NEW ENERGY AND ENGINEERING LTD<br>Office No. 416, Burlington Tower, Business Bay, Dubai<br>P.O. Box 487644, United Arab Emirates<br>ICC20211393',
       mail_title: 'Mailing address:',
       mail_text:
-        'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic<br><br>' /* визуальная «пустая строка» */
+        'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
+    hint_attach: 'Allowed: PDF, JPG. Max 3 files, 5 MB each.',
     fallbackNote: 'If automatic sending failed, copy the text below and email it to'
   },
-  uk: {
+  uk:{
     nav: { back: '← На головну', title: 'Контакти' },
     head: { h1: 'Зв’яжіться з нами', lead: 'Опишіть задачу — ми запропонуємо рішення і невдовзі відповімо.' },
     labels: {
       name: 'Ваше ім’я *', email: 'Email *', phone: 'Телефон / WhatsApp', company: 'Компанія',
       service: 'Напрям *', deadline: 'Строк / дедлайн', message: 'Короткий опис задачі *',
-      choose: 'Оберіть…', energy: 'Енергетичний інжиніринг', fsa: 'ФСА / TRIZ', lab: 'Лабораторні дослідження'
+      choose: 'Оберіть…', energy: 'Енергетичний інжиніринг', fsa: 'ФСА / TRIZ', lab: 'Лабораторні дослідження',
+      attach: 'Вкладення (PDF/JPG, до 5 МБ, максимум 3 файли)'
     },
     ph: {
-      name: 'Семен Петренко',
+      name: 'Іван Іванов',
       email: 'you@company.com',
       phone: '+420 607 828 092',
       company: 'ТОВ «Компанія»',
@@ -425,23 +420,19 @@ const I18N = {
     addr: {
       reg_title: 'Адреса реєстрації:',
       reg_text:
-        'NEW ENERGY AND ENGINEERING LTD<br>Office No. 416, Burlington Tower, Business Bay, Dubai<br>P.O. Box 487644, United Arab Emirates<br>ICC20211393',
+        'NEW ENERGY AND ENGINEERING LTD<br>Office No. 416, Burlington Tower, Business Bay, Dubai<br>P.O. Box 487644, Об’єднані Арабські Емірати<br>ICC20211393',
       mail_title: 'Поштова адреса:',
       mail_text:
-        'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic<br><br>' /* визуальная «пустая строка» */
+        'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
+    hint_attach: 'Дозволено: PDF, JPG. Максимум 3 файли, по 5 МБ.',
     fallbackNote: 'Якщо автоматичне надсилання не спрацювало, скопіюйте текст нижче й надішліть на'
   }
 };
 
-function t(path) {
-  const lang = getLang();
-  const segs = path.split('.');
-  let obj = I18N[lang] || I18N.ru;
-  for (const s of segs) { obj = obj?.[s]; if (!obj) break; }
-  return (typeof obj === 'string') ? obj : '';
-}
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
 function applyLangUI() {
   const lang = getLang();
@@ -462,6 +453,8 @@ function applyLangUI() {
   if ($('lblService')) $('lblService').textContent = t('labels.service');
   if ($('lblDeadline')) $('lblDeadline').textContent = t('labels.deadline');
   if ($('lblMessage')) $('lblMessage').textContent = t('labels.message');
+  if ($('lblFiles')) $('lblFiles').textContent = t('labels.attach');
+  if ($('hintFiles')) $('hintFiles').textContent = t('hint_attach');
 
   if ($('optChoose')) $('optChoose').textContent = t('labels.choose');
   if ($('optEnergy')) $('optEnergy').textContent = t('labels.energy');
@@ -511,7 +504,7 @@ document.addEventListener('click', (e)=>{
   if (lang) window.setLang(lang);
 });
 
-// ===== Отправка формы: x-www-form-urlencoded на /contact =====
+// ===== Отправка формы: multipart/form-data на /contact =====
 const f = document.getElementById('briefForm');
 const fb = document.getElementById('fallback');
 const fbText = document.getElementById('fallbackText');
@@ -538,13 +531,22 @@ f.addEventListener('submit', async (e)=>{
     if(!tok){ alert(t('msg.captcha')); throw new Error('no token'); }
     fd.set('cf-turnstile-response', tok);
 
-    const params = new URLSearchParams();
-    for (const [k,v] of fd.entries()) params.append(k, String(v));
+    // validate files on client
+    const fileInput = document.getElementById('files');
+    const files = fileInput ? Array.from(fileInput.files) : [];
+    if (files.length > 3) { alert('Слишком много файлов (макс. 3).'); throw new Error('too_many_files'); }
+    let total = 0;
+    for (const f of files) {
+      const okType = ['application/pdf','image/jpeg'].includes(f.type) || /\.(pdf|jpe?g)$/i.test(f.name||'');
+      if (!okType) { alert('Допустимы только PDF или JPG.'); throw new Error('bad_type'); }
+      if (f.size > 5*1024*1024) { alert('Один из файлов больше 5 МБ.'); throw new Error('too_big'); }
+      total += f.size;
+      if (total > 10*1024*1024) { alert('Суммарный размер вложений больше 10 МБ.'); throw new Error('too_big_total'); }
+    }
 
     const res = await fetch(f.action, {
       method: 'POST',
-      headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
-      body: params
+      body: fd
     });
     const json = await res.json().catch(()=> ({}));
 
@@ -586,34 +588,5 @@ copyBtn?.addEventListener('click', async () => {
   }
 });
 </script>
-<script>
-(function(){
-  function enforceAddrHeadings(){
-    const lang = (document.documentElement.lang || 'ru').slice(0,2);
-    const map = {
-      ru: { reg:'Адрес регистрации:', mail:'Почтовый адрес:' },
-      en: { reg:'Registered address:', mail:'Mailing address:' },
-      uk: { reg:'Адреса реєстрації:', mail:'Поштова адреса:' }
-    };
-    const L = map[lang] || map.ru;
-
-    const hReg = document.getElementById('regAddrTitle');
-    const hMail = document.getElementById('mailAddrTitle');
-    if (hReg && hReg.textContent.trim() !== L.reg) hReg.textContent = L.reg;
-    if (hMail && hMail.textContent.trim() !== L.mail) hMail.textContent = L.mail;
-
-    const mailText = document.getElementById('mailAddrText');
-    if (mailText && !/<br>\s*$/i.test(mailText.innerHTML)) {
-      mailText.innerHTML = mailText.innerHTML.trim() + '<br>'; // «воздух» снизу
-    }
-  }
-
-  // Запускаем после всех скриптов и при смене языка
-  window.addEventListener('DOMContentLoaded', ()=>{ setTimeout(enforceAddrHeadings, 0); setTimeout(enforceAddrHeadings, 250); });
-  window.addEventListener('load', ()=>{ setTimeout(enforceAddrHeadings, 0); });
-  window.addEventListener('langchange', ()=>{ setTimeout(enforceAddrHeadings, 0); });
-})();
-</script>
-  
 </body>
 </html>

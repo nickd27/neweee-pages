@@ -32,6 +32,10 @@ export default {
             name = (p.get("name") || "").trim();
             email = (p.get("email") || "").trim();
             message = (p.get("message") || "").trim();
+            var phone = (p.get("phone") || "").trim();
+            var company = (p.get("company") || "").trim();
+            var service = (p.get("service") || "").trim();
+            var deadline = (p.get("deadline") || "").trim();
             token = p.get("cf-turnstile-response") || "";
           } else if (ct.includes("multipart/form-data")) {
             const form = await request.formData();
@@ -39,6 +43,11 @@ export default {
             email = (form.get("email") || "").toString().trim();
             message = (form.get("message") || "").toString().trim();
             token = form.get("cf-turnstile-response") || "";
+            var phone = (form.get("phone") || "").toString().trim();
+            var company = (form.get("company") || "").toString().trim();
+            var service = (form.get("service") || "").toString().trim();
+            var deadline = (form.get("deadline") || "").toString().trim();
+            var uploadedFiles = form.getAll("files").filter(f => f && typeof f.name === "string");
           }
 
           if (!token) return json(400, { ok:false, error:"turnstile_token_missing" });
@@ -62,7 +71,7 @@ export default {
           }
 
           // ---- отправляем письмо
-          return await sendMail(env, { name, email, message });
+          return await sendMail(env, { name, email, message, phone, company, service, deadline, uploadedFiles });
 
         } catch (e) {
           console.log("Contact handler error:", e.stack || e);
@@ -81,7 +90,7 @@ export default {
   }
 }
 
-async function sendMail(env, { name, email, message }) {
+async function sendMail(env, { name, email, message, phone="", company="", service="", deadline="", uploadedFiles=[] }) {
   const SEND_TO = env.SEND_TO;
   const SEND_DOMAIN = env.SEND_DOMAIN;
   const FROM_NAME = env.FROM_NAME || "Neweee";
@@ -115,15 +124,55 @@ async function sendMail(env, { name, email, message }) {
     } : {})
   };
 
+  // Compose text content
+  const textLines = [
+    `Name: ${name}`,
+    `Email: ${email}`,
+    phone ? `Phone: ${phone}` : null,
+    company ? `Company: ${company}` : null,
+    service ? `Service: ${service}` : null,
+    deadline ? `Deadline: ${deadline}` : null,
+    '',
+    'Message:',
+    message
+  ].filter(Boolean);
+
+  // Build attachments for MailChannels if any uploaded
+  let attachments = [];
+  if (uploadedFiles && uploadedFiles.length) {
+    const allowed = new Set(['application/pdf','image/jpeg']);
+    let total = 0;
+    attachments = await Promise.all(
+      uploadedFiles.slice(0,3).map(async (file) => {
+        const type = file.type || 'application/octet-stream';
+        const size = file.size || 0;
+        const nameSafe = sanitizeFilename(file.name || 'file');
+        if (!allowed.has(type) && !/\.(pdf|jpe?g)$/i.test(nameSafe)) {
+          throw new Error('bad_type');
+        }
+        if (size > 5 * 1024 * 1024) { throw new Error('too_big'); }
+        total += size;
+        if (total > 10 * 1024 * 1024) { throw new Error('too_big_total'); }
+        const ab = await file.arrayBuffer();
+        return {
+          type,
+          filename: nameSafe,
+          content: toBase64(ab)
+        };
+      })
+    );
+  }
+
   const mail = {
     personalizations: [ personal ],
     from: { email: `noreply@${SEND_DOMAIN}`, name: FROM_NAME },
     reply_to: REPLY_TO ? { email: REPLY_TO } : undefined,
     subject: `Сообщение с сайта: ${name || "без имени"}`,
     content: [
-      { type: "text/plain", value: `От: ${name}\nEmail: ${email}\n\n${message}` },
-      { type: "text/html",  value: `<p><b>От:</b> ${escapeHtml(name||"")}</p><p><b>Email:</b> ${escapeHtml(email||"")}</p><p>${escapeHtml(message||"").replace(/\n/g,"<br>")}</p><hr><p style="font:12px/1.4 system-ui">Отправлено с <a href="https://neweee.com">neweee.com</a></p>` }
+      { type: "text/plain", value: textLines.join('\n') },
+      { type: "text/html",  value: `<pre style="white-space:pre-wrap">${escapeHtml(textLines.join('\n'))}</pre>` }
     ],
+    ...(attachments.length ? { attachments } : {})
   };
 
   // короткая диагностика в лог
@@ -146,8 +195,16 @@ async function sendMail(env, { name, email, message }) {
   return json(200, { ok:true, sent:true, mcStatus: mcRes.status, mcTrace, dkimEnabled });
 }
 
+function toBase64(ab){
+  let binary='';
+  const bytes = new Uint8Array(ab);
+  for (let i=0;i<bytes.byteLength;i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+function sanitizeFilename(name){
+  return (name||'file').replace(/[^\w.\- ]+/g,'_').slice(0,120);
+}
 function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
-
 
 function json(status, data) {
   return new Response(JSON.stringify(data), {
@@ -155,3 +212,4 @@ function json(status, data) {
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
+

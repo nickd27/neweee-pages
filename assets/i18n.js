@@ -599,37 +599,28 @@
     var addrH = qs('body.contacts .contact-strip h3:first-child'); if (addrH) addrH.textContent = t.addrTitle;
     var telH  = qs('body.contacts .contact-strip h3:nth-child(2)'); if (telH) telH.textContent  = t.phoneTitle;
   
-    // --- Attachments (files) texts ---
-    try{
-      var ATT = {
-        ru: {
-          lbl: 'Вложения (PDF/JPG/PNG, до 5 МБ, до 3 файлов)',
-          btn: 'Вложить файлы',
-          none: 'Файлы не выбраны',
-          hint: 'Допустимые: PDF, JPG, PNG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.'
-        },
-        en: {
-          lbl: 'Attachments (PDF/JPG/PNG, up to 5 MB, max 3 files)',
-          btn: 'Attach files',
-          none: 'No files selected',
-          hint: 'Allowed: PDF, JPG, PNG. Max 3 files, 5 MB each. Up to 15 MB total.'
-        },
-        uk: {
-          lbl: 'Вкладення (PDF/JPG/PNG, до 5 МБ, максимум 3 файли)',
-          btn: 'Додати файли',
-          none: 'Файли не вибрані',
-          hint: 'Дозволено: PDF, JPG, PNG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.'
-        }
-      };
-      var a = ATT[lang] || ATT.ru;
-      var lblFiles = qs('#lblFiles'); if (lblFiles) lblFiles.textContent = a.lbl;
-      var btnPick = qs('#btnPickFiles'); if (btnPick) btnPick.textContent = a.btn;
-      var filesInfo = qs('#filesInfo');
-      if (filesInfo && ([''+ATT.ru.none, ''+ATT.en.none, ''+ATT.uk.none].indexOf(filesInfo.textContent)>=0)) {
-        filesInfo.textContent = a.none;
+  // === PATCH: translate attachments UI reliably using page dictionary, and avoid overwriting file list ===
+  try {
+    var tPage = (typeof window.t === 'function') ? window.t : null;
+    if (tPage) {
+      var elLbl = document.getElementById('lblFiles');
+      if (elLbl) elLbl.textContent = tPage('labels.attach');
+
+      var elBtn = document.getElementById('btnPickFiles');
+      if (elBtn) elBtn.textContent = tPage('ui.attach_btn');
+
+      var elHint = document.getElementById('hintFiles');
+      if (elHint) elHint.textContent = tPage('hint_attach');
+
+      var filesList = document.getElementById('filesList');
+      var elInfo = document.getElementById('filesInfo');
+      var hasListItems = filesList && filesList.children && filesList.children.length > 0;
+      // Update placeholder text only if user hasn't selected files (so we don't clobber the live list)
+      if (elInfo && !hasListItems) {
+        elInfo.textContent = tPage('ui.files_none');
       }
-      var hint = qs('#hintFiles'); if (hint) hint.textContent = a.hint;
-    }catch(e){}
+    }
+  } catch (e) { /* no-op */ }
 }
   function replaceCardHTML(lang, key){
   var card = qs('main .card'); 

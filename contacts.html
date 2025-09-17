@@ -160,7 +160,7 @@ main{ padding-bottom: 120px; }
           <button type="button" class="btn" id="btnPickFiles" data-i18n="ui.attach_btn">Вложить файлы</button>
           <span class="small" id="filesInfo" data-i18n="ui.files_none">Файлы не выбраны</span>
         </div>
-        <p class="small" id="hintFiles" data-i18n="hint_attach">Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ.</p>
+        <p class="small" id="hintFiles" data-i18n="hint_attach">Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.</p>
       </div>
 
       <!-- Turnstile -->
@@ -357,7 +357,7 @@ const I18N = {
         'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
-    hint_attach: 'Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ.',
+    hint_attach: 'Допустимые: PDF, JPG. Максимум 3 файла, каждый до 5 МБ. И до 15 МБ суммарно.',
     fallbackNote: 'Если автоматическая отправка не прошла, скопируйте текст ниже и отправьте вручную на'
   },
   en:{
@@ -398,7 +398,7 @@ const I18N = {
         'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
-    hint_attach: 'Allowed: PDF, JPG. Max 3 files, 5 MB each.',
+    hint_attach: 'Allowed: PDF, JPG. Max 3 files, 5 MB each. Up to 15 MB total.',
     fallbackNote: 'If automatic sending failed, copy the text below and email it to'
   },
   uk:{
@@ -439,7 +439,7 @@ const I18N = {
         'Kovarova 2240/2<br>591 01, Zdar nad Sazavou<br>Czech Republic'
     },
 
-    hint_attach: 'Дозволено: PDF, JPG. Максимум 3 файли, по 5 МБ.',
+    hint_attach: 'Дозволено: PDF, JPG. Максимум 3 файли, по 5 МБ. І до 15 МБ сумарно.',
     fallbackNote: 'Якщо автоматичне надсилання не спрацювало, скопіюйте текст нижче й надішліть на'
   }
 };
@@ -554,7 +554,7 @@ f.addEventListener('submit', async (e)=>{
       if (!okType) { alert('Допустимы только PDF или JPG.'); throw new Error('bad_type'); }
       if (f.size > 5*1024*1024) { alert('Один из файлов больше 5 МБ.'); throw new Error('too_big'); }
       total += f.size;
-      if (total > 10*1024*1024) { alert('Суммарный размер вложений больше 10 МБ.'); throw new Error('too_big_total'); }
+      if (total > 15*1024*1024) { alert('Суммарный размер вложений больше 15 МБ.'); throw new Error('too_big_total'); }
     }
 
     const res = await fetch(f.action, { method: 'POST', body: fd });
@@ -602,3 +602,4 @@ copyBtn?.addEventListener('click', async () => {
 </script>
 </body>
 </html>
+

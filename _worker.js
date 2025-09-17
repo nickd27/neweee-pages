@@ -116,7 +116,7 @@ async function sendMail(env, { name, email, message, phone="", company="", servi
         }
         if (size > 5 * 1024 * 1024) { throw new Error('too_big'); }
         total += size;
-        if (total > 10 * 1024 * 1024) { throw new Error('too_big_total'); }
+        if (total > 15 * 1024 * 1024) { throw new Error('too_big_total'); }
         const ab = await file.arrayBuffer();
         return {
           type,

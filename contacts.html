@@ -493,6 +493,10 @@ function applyLangUI() {
   if ($id('regAddrText')) $id('regAddrText').innerHTML = t('addr.reg_text');
   if ($id('mailAddrText')) $id('mailAddrText').innerHTML = t('addr.mail_text');
 
+  // ⬇️ ДОБАВЛЕНО: переводим "Спасибо!" (если блок уже показан)
+  if ($id('successTitle')) $id('successTitle').textContent = t('success.title');
+  if ($id('successText'))  $id('successText').textContent  = t('success.text');
+
   const fb = $id('fallback'), note = $id('fbNote');
   if (fb && note) {
     const mail = (note.querySelector('a')?.outerHTML) || 'office@neweee.com';
@@ -612,8 +616,9 @@ f.addEventListener('submit', async (e)=>{
     const json = await res.json().catch(()=> ({}));
 
     if(res.ok && json && json.ok){
-      const title = t('success.title'), text = t('success.text');
-      f.innerHTML = `<h2>${title}</h2><p class="muted">${text}</p>`;
+      // ⬇️ ДОБАВЛЕНО: узлы успеха + перевести текущим языком
+      f.innerHTML = `<h2 id="successTitle"></h2><p id="successText" class="muted"></p>`;
+      applyLangUI();
       f.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }else{
       throw new Error(json && (json.error || json.text) || ('status '+res.status));
@@ -653,4 +658,3 @@ copyBtn?.addEventListener('click', async () => {
 </script>
 </body>
 </html>
-

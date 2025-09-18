@@ -38,7 +38,9 @@
     storage.set('lang', L);
     apply(L);
     highlight(L);
-  }
+  
+  try { document.documentElement.setAttribute('lang', L); window.__lang = L; window.dispatchEvent(new CustomEvent('langchange', { detail: { lang: L } })); } catch(e) {}
+}
 
   // ---------- Переключатель ----------
   function mountSwitcher(){
@@ -561,7 +563,7 @@
   function applyContacts(lang){
     var t = T.contacts[lang] || T.contacts.ru;
     var H1 = qs('body.contacts h1'); if (H1) H1.textContent = t.header;
-    var lead = qs('body.contacts .card p.muted'); if (lead) lead.textContent = t.lead;
+    var lead = qs('#lead'); if (lead) lead.textContent = t.lead;
     function L(id, txt){ var el = qs('label[for="'+id+'"]'); if (el) el.textContent = txt; }
     L('name',t.name); L('email',t.email); L('phone',t.phone); L('company',t.company); L('service',t.service); L('deadline',t.deadline); L('message',t.message);
     var sel = qs('#service'); if (sel){
@@ -585,6 +587,22 @@
  
   var subj = encodeURIComponent(subjMap[lang] || 'NE&E Brief');
   form.setAttribute('action', 'mailto:office@neweee.com?subject=' + subj);
+    // --- Success message (after form submission) ---
+    (function(){
+      var sTitle = qs('#successTitle');
+      var sText  = qs('#successText');
+      if (sTitle || sText){
+        var Smap = {
+          ru: { title:'Спасибо!', text:'Мы получили вашу заявку и свяжемся с вами в ближайшее время.' },
+          en: { title:'Thank you!', text:'We’ve received your request and will get back to you shortly.' },
+          uk: { title:'Дякуємо!', text:'Ми отримали вашу заявку і невдовзі з вами зв’яжемося.' }
+        };
+        var S = Smap[lang] || Smap.ru;
+        if (sTitle) sTitle.textContent = S.title;
+        if (sText)  sText.textContent  = S.text;
+      }
+    })();
+    
 }
 
     }

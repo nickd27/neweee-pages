@@ -87,8 +87,9 @@ export default {
 async function sendMail(env, { name, email, message, phone="", company="", service="", deadline="", uploadedFiles=[] }) {
   const SEND_TO = env.SEND_TO || "office@neweee.com";
   const SEND_DOMAIN = env.SEND_DOMAIN || "neweee.com";
-  const FROM_NAME = env.FROM_NAME || "Neweee";
-  const REPLY_TO = email || env.REPLY_TO || "";
+  const FROM_NAME = env.FROM_NAME || "NEWEEE Website";
+  const REPLY_TO = (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (env.SEND_TO||"").toLowerCase() !== (email||"").toLowerCase()) ? email : (env.REPLY_TO || "");
+  const MESSAGE_ID = `<${crypto.randomUUID()}@${SEND_DOMAIN}>`;
 
   const textLines = [
     `Name: ${name}`,
@@ -130,13 +131,19 @@ async function sendMail(env, { name, email, message, phone="", company="", servi
   const payload = {
     personalizations: [{ to: [{ email: SEND_TO }] }],
     from: { email: `noreply@${SEND_DOMAIN}`, name: FROM_NAME },
-    ...(REPLY_TO ? { reply_to: { email: REPLY_TO } } : {}),
+    ...(REPLY_TO ? { reply_to: { email: REPLY_TO, name: name || REPLY_TO } } : {}),
     subject: `Сообщение с сайта: ${name || "без имени"}`,
     content: [
-      { type: "text/plain", value: textLines.join('\n') },
-      { type: "text/html",  value: `<pre style="white-space:pre-wrap">${escapeHtml(textLines.join('\n'))}</pre>` }
+      { type: "text/plain; charset=UTF-8", value: textLines.join('\n') },
+      { type: "text/html; charset=UTF-8",  value: `<pre style="white-space:pre-wrap">${escapeHtml(textLines.join('\n'))}</pre>` }
     ],
-    ...(attachments.length ? { attachments } : {})
+    ...(attachments.length ? { attachments } : {}),
+    headers: {
+      "Message-ID": MESSAGE_ID,
+      "X-Website": "neweee.com",
+      "X-Form-Lang": "unknown",
+      "List-Unsubscribe": "<mailto:office@neweee.com?subject=unsubscribe>, <https://neweee.com/unsubscribe>"
+    }
   };
 
   const headers = { "content-type": "application/json" };
@@ -150,7 +157,7 @@ async function sendMail(env, { name, email, message, phone="", company="", servi
 
   const text = await mcRes.text();
   const mcTrace = mcRes.headers.get("X-Message-Id") || mcRes.headers.get("x-request-id") || null;
-  console.log("MailChannels:", mcRes.status, (text || "").slice(0, 200), "trace:", mcTrace);
+  console.log("MailChannels:", mcRes.status, (text || "").slice(0, 200), "trace:", mcTrace, "msgid:", MESSAGE_ID);
 
   if (!mcRes.ok) {
     return json(mcRes.status, { ok:false, error:"mailchannels_failed", status: mcRes.status, text, mcTrace });
@@ -168,7 +175,7 @@ function toBase64(ab){
 function sanitizeFilename(name){
   return (name||'file').replace(/[^\w.\- ]+/g,'_').slice(0,120);
 }
-function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }[m])); }
 
 function json(status, data) {
   return new Response(JSON.stringify(data), {
@@ -176,4 +183,6 @@ function json(status, data) {
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
+
+
 
